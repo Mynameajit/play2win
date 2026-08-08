@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/apiClient'
-import { Transaction } from '@/lib/mockData' // Replace with actual types if available
+import { Transaction } from '@/context/AppContext'
 
 export function useTransactions() {
   return useQuery<Transaction[]>({

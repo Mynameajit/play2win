@@ -61,7 +61,7 @@ export default function MatchDetailPage() {
           <span>Match Rules & Fair Play</span>
         </h3>
         <ul className="space-y-1 text-xs text-slate-300 list-disc list-inside">
-          {match.rules.map((rule, idx) => (
+          {match.rules?.map((rule: any, idx: any) => (
             <li key={idx}>{rule}</li>
           ))}
         </ul>
@@ -74,7 +74,7 @@ export default function MatchDetailPage() {
           <span>Prize Distribution</span>
         </h3>
         <div className="divide-y divide-white/5">
-          {match.prizeDistribution.map((item, idx) => (
+          {match.prizeDistribution?.map((item: any, idx: any) => (
             <div key={idx} className="py-2 flex items-center justify-between text-xs">
               <span className="font-bold text-slate-200">{item.rank}</span>
               <span className="font-black text-emerald-400">{item.reward}</span>

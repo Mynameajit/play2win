@@ -82,6 +82,14 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, descrip
         fallbackBack: '/dashboard'
       }
     }
+    if (pathname.startsWith('/support')) {
+      return {
+        title: 'Customer Support',
+        subtitle: '24/7 Priority Assistance',
+        icon: <ShieldCheck className="w-4 h-4 text-cyan-400" />,
+        fallbackBack: '/dashboard'
+      }
+    }
 
     // Default Fallback
     return {

@@ -26,7 +26,9 @@ export function useActiveAnnouncement() {
     queryFn: async () => {
       const res = await apiClient.get('/api/notifications/announcements/active')
       return (res.data as Announcement) || null
-    }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    refetchOnWindowFocus: false
   })
 
   useEffect(() => {

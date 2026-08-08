@@ -36,14 +36,23 @@ export function useAdminMatchDetails(id: string) {
 export function useAdminUpdateRoom() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, roomId, roomPassword }: { id: string, roomId: string, roomPassword: string }) => {
-      const response = await apiClient.put(`/admin-ops/matches/${id}/room`, { roomId, roomPassword })
+    mutationFn: async ({ id, roomId, roomPassword, roomScreenshot }: { id: string, roomId: string, roomPassword: string, roomScreenshot?: string }) => {
+      const response = await apiClient.put(`/admin-ops/matches/${id}/room`, { roomId, roomPassword, roomScreenshot })
       return response.data
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin-match', variables.id] })
     }
   })
+}
+
+export async function uploadImage(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('image', file)
+  const response = await apiClient.post('/admin-ops/upload/image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+  return response.data.imageUrl // Assuming backend returns { imageUrl: '...' }
 }
 
 export function useAdminOpenRoom() {
@@ -75,8 +84,8 @@ export function useAdminUpdateMatchStatus() {
 export function useAdminUploadResults() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, resultsScreenshot, resultsRemarks, winnerUid, rank, kills }: { id: string, resultsScreenshot?: string, resultsRemarks?: string, winnerUid?: string, rank?: number, kills?: number }) => {
-      const response = await apiClient.post(`/admin-ops/matches/${id}/results`, { resultsScreenshot, resultsRemarks, winnerUid, rank, kills })
+    mutationFn: async ({ id, resultsScreenshot, resultsRemarks, winners }: { id: string, resultsScreenshot?: string, resultsRemarks?: string, winners: { winnerUid: string, rank: number }[] }) => {
+      const response = await apiClient.post(`/admin-ops/matches/${id}/results`, { resultsScreenshot, resultsRemarks, winners })
       return response.data
     },
     onSuccess: (_, variables) => {

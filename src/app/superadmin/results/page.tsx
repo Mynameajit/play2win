@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { uploadImage } from '@/hooks/useAdminOps'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/apiClient'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -90,6 +91,8 @@ function EditResultModal({ result, onClose }: { result: MatchResult, onClose: ()
   const [kills, setKills] = useState(result.kills.toString())
   const [prize, setPrize] = useState(result.prizeAmount.toString())
   const [remarks, setRemarks] = useState(result.remarks || '')
+  const [file, setFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
   const editMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -106,9 +109,20 @@ function EditResultModal({ result, onClose }: { result: MatchResult, onClose: ()
     }
   })
 
-  const handleEdit = (e: React.FormEvent) => {
+  const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault()
-    editMutation.mutate({ winnerUid, rank, kills, prizeAmount: prize, remarks })
+    setIsUploading(true)
+    let finalScreenshotUrl = result.screenshotUrl
+    try {
+      if (file) {
+        finalScreenshotUrl = await uploadImage(file)
+      }
+      editMutation.mutate({ winnerUid, rank, kills, prizeAmount: prize, remarks, screenshotUrl: finalScreenshotUrl })
+    } catch (err: any) {
+      toast({ title: 'Image upload failed', description: err.message, variant: 'destructive' })
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   return (
@@ -140,8 +154,12 @@ function EditResultModal({ result, onClose }: { result: MatchResult, onClose: ()
           <Label>Remarks (Audit Reason)</Label>
           <Textarea value={remarks} onChange={(e) => setRemarks(e.target.value)} required placeholder="Reason for editing..." />
         </div>
-        <Button type="submit" disabled={editMutation.isPending} className="w-full">
-          {editMutation.isPending ? 'Saving...' : 'Save Changes'}
+        <div className="space-y-2">
+          <Label>Replace Screenshot (Optional)</Label>
+          <Input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+        </div>
+        <Button type="submit" disabled={editMutation.isPending || isUploading} className="w-full">
+          {editMutation.isPending || isUploading ? 'Saving...' : 'Save Changes'}
         </Button>
       </form>
     </DialogContent>

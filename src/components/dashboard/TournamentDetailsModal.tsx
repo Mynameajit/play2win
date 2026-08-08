@@ -163,7 +163,7 @@ export const TournamentDetailsModal: React.FC = () => {
             <span>Tournament Rules</span>
           </h4>
           <ul className="space-y-1 text-xs text-slate-300 glass-panel p-3.5 rounded-2xl border border-white/10">
-            {selectedTournament.rules.map((r, i) => (
+            {selectedTournament.rules?.map((r: any, i: any) => (
               <li key={i} className="flex items-start gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-1.5 shrink-0" />
                 <span>{r}</span>

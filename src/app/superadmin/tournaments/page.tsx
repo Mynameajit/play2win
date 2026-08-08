@@ -63,8 +63,8 @@ export default function TournamentsPage() {
     mode: 'Squad',
     map: 'Erangel',
     startTime: new Date().toISOString().slice(0, 16),
-    prizePool: '0',
-    entryFee: '0',
+    prizePool: 0,
+    entryFee: 0,
     totalSlots: 100,
     assignedAdminId: '',
   })
@@ -269,7 +269,7 @@ export default function TournamentsPage() {
           setFormData({
             title: '', game: '', mode: 'Squad', map: 'Erangel',
             startTime: new Date().toISOString().slice(0, 16),
-            prizePool: '0', entryFee: '0', totalSlots: 100, assignedAdminId: '', banner: ''
+            prizePool: 0, entryFee: 0, totalSlots: 100, assignedAdminId: '', banner: ''
           })
           setSelectedFile(null)
           setIsCreateOpen(true)
@@ -357,11 +357,11 @@ export default function TournamentsPage() {
               </div>
               <div className="space-y-2">
                 <Label>Entry Fee (₹)</Label>
-                <Input required type="number" min="0" value={formData.entryFee} onChange={(e) => setFormData({ ...formData, entryFee: e.target.value })} />
+                <Input required type="number" min="0" value={formData.entryFee} onChange={(e) => setFormData({ ...formData, entryFee: Number(e.target.value) })} />
               </div>
               <div className="space-y-2">
                 <Label>Prize Pool (₹)</Label>
-                <Input required type="number" min="0" value={formData.prizePool} onChange={(e) => setFormData({ ...formData, prizePool: e.target.value })} />
+                <Input required type="number" min="0" value={formData.prizePool} onChange={(e) => setFormData({ ...formData, prizePool: Number(e.target.value) })} />
               </div>
             </div>
             
@@ -472,11 +472,11 @@ export default function TournamentsPage() {
               </div>
               <div className="space-y-2">
                 <Label>Entry Fee (₹)</Label>
-                <Input required type="number" min="0" value={formData.entryFee} onChange={(e) => setFormData({ ...formData, entryFee: e.target.value })} />
+                <Input required type="number" min="0" value={formData.entryFee} onChange={(e) => setFormData({ ...formData, entryFee: Number(e.target.value) })} />
               </div>
               <div className="space-y-2">
                 <Label>Prize Pool (₹)</Label>
-                <Input required type="number" min="0" value={formData.prizePool} onChange={(e) => setFormData({ ...formData, prizePool: e.target.value })} />
+                <Input required type="number" min="0" value={formData.prizePool} onChange={(e) => setFormData({ ...formData, prizePool: Number(e.target.value) })} />
               </div>
             </div>
 

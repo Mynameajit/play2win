@@ -63,6 +63,7 @@ export const MobileNav: React.FC = () => {
     { href: '/', label: 'Home', icon: <Home className="w-4 h-4" /> },
     { href: '/dashboard', label: 'Matches', icon: <Trophy className="w-4 h-4" /> },
     { href: '/wallet', label: 'Wallet', icon: <Wallet className="w-4 h-4" /> },
+    { href: '/support', label: 'Support', icon: <ShieldCheck className="w-4 h-4" /> },
     { href: '/profile', label: 'Profile', icon: <User className="w-4 h-4" /> },
   ]
 

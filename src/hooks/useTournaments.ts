@@ -8,14 +8,19 @@ export interface Tournament {
   mode: string
   map: string
   startTime: string
-  prizePool: string
-  entryFee: string
+  prizePool: number
+  entryFee: number
   totalSlots: number
   joinedSlots: number
+  rules?: string[]
+  prizeDistribution?: any[]
+  contestType?: string
+  roomCredsSent?: boolean
   status: 'LIVE' | 'UPCOMING' | 'FILLED' | 'COMPLETED' | 'RESULT_PENDING' | 'PRIZE_DISTRIBUTED' | 'ROOM_OPEN' | 'ROOM_READY' | 'CANCELLED' | string
   assignedAdminId?: string
   roomId?: string
   roomPassword?: string
+  roomScreenshot?: string
   banner?: string
   thumbnail?: string
   winnersDeclared?: boolean

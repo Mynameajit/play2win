@@ -1,18 +1,57 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { 
-  MOCK_TOURNAMENTS, 
-  MOCK_TRANSACTIONS, 
-  INITIAL_ADMINS, 
-  INITIAL_WINNER_SUBMISSIONS,
-  GAME_UID_DATABASE, 
-  Tournament, 
-  Transaction, 
-  AdminUser,
-  MatchWinnerSubmission,
-  NotificationItem
-} from '@/lib/mockData'
+import { Tournament } from '@/hooks/useTournaments'
+
+export interface AdminUser {
+  id: string
+  name: string
+  email: string
+  assignedGame: 'BGMI' | 'Free Fire' | 'ALL'
+  status: 'ACTIVE' | 'INACTIVE'
+  createdDate: string
+}
+
+export interface MatchWinnerSubmission {
+  id: string
+  tournamentId: string
+  tournamentTitle: string
+  game: 'BGMI' | 'Free Fire'
+  firstPlaceUid: string
+  firstPlaceIgn: string
+  firstPlacePrize: number
+  secondPlaceUid?: string
+  secondPlaceIgn?: string
+  secondPlacePrize?: number
+  thirdPlaceUid?: string
+  thirdPlaceIgn?: string
+  thirdPlacePrize?: number
+  status: 'PENDING_SUPERADMIN' | 'PAID'
+  submittedAt: string
+}
+
+export interface Transaction {
+  id: string
+  type: 'deposit' | 'withdrawal' | 'entry_fee' | 'winning' | 'manual_credit' | 'manual_debit' | 'refund' | 'coupon_bonus'
+  title: string
+  amount: number
+  status: 'COMPLETED' | 'PENDING' | 'FAILED'
+  date: string
+  paymentMethod?: string
+  utr?: string
+  details?: string
+  balanceBefore?: number
+  balanceAfter?: number
+}
+
+export interface NotificationItem {
+  id: string
+  title: string
+  message: string
+  time: string
+  unread: boolean
+  type: 'tournament' | 'wallet' | 'system'
+}
 import confetti from 'canvas-confetti'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { apiClient } from '@/lib/apiClient'
@@ -220,6 +259,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
             activeSocket.on('match_update', (data: any) => {
               console.log('[Socket] Match status updated:', data)
+              queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] })
+              queryClient.invalidateQueries({ queryKey: ['admin-matches'] })
+              queryClient.invalidateQueries({ queryKey: ['admin-match'] })
+              
               // Refetch matches
               apiClient.get('/tournaments').then(res => {
                 if (res.data?.tournaments) {
@@ -247,6 +290,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
             activeSocket.on('tournament:update', (data: any) => {
               console.log('[Socket] Tournament updated by admin:', data)
+              queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] })
+              queryClient.invalidateQueries({ queryKey: ['admin-matches'] })
+              queryClient.invalidateQueries({ queryKey: ['admin-match'] })
               apiClient.get('/tournaments').then(res => {
                 if (res.data?.tournaments) {
                   setTournaments(res.data.tournaments)
@@ -264,6 +310,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                   }
                 }).catch(() => {})
               }
+            })
+
+            activeSocket.on('tournament_assigned', (data: any) => {
+              console.log('[Socket] Tournament assigned to you:', data)
+              queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] })
+              queryClient.invalidateQueries({ queryKey: ['admin-matches'] })
+              showToast(`You have been assigned to manage: ${data.title}`, 'info')
+            })
+
+            activeSocket.on('admin_stats_update', () => {
+              queryClient.invalidateQueries({ queryKey: ['superAdmin', 'financialAnalytics'] })
+            })
+
+            activeSocket.on('result_uploaded', () => {
+              queryClient.invalidateQueries({ queryKey: ['superAdmin', 'financialAnalytics'] })
+              queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] })
+            })
+
+            activeSocket.on('result_approved', () => {
+              queryClient.invalidateQueries({ queryKey: ['superAdmin', 'financialAnalytics'] })
+              queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] })
             })
 
             activeSocket.on('room_creds', (data: any) => {
@@ -334,8 +401,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }))
             setTransactions(mapped)
           }
-        } catch (e) {
+        } catch (e: any) {
           console.error('[App Provider] Error fetching backend data:', e)
+          if (e.response?.status === 404 || e.response?.status === 401) {
+            console.warn('User session invalid or user not found. Logging out...')
+            handleLogout()
+          }
+        } finally {
+          setIsTournamentsLoading(false)
         }
       }
       fetchData()
@@ -452,13 +525,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const cleanUid = uid.trim()
     if (!cleanUid || cleanUid.length < 6) {
       return { valid: false, message: `Invalid ${game} UID length. Must be at least 6 digits.` }
-    }
-
-    if (GAME_UID_DATABASE[cleanUid]) {
-      const dbEntry = GAME_UID_DATABASE[cleanUid]
-      if (dbEntry.game === game) {
-        return { valid: true, ign: dbEntry.ign, message: `Official ${game} Server: Player Found ✓` }
-      }
     }
 
     if (/^\d+$/.test(cleanUid)) {
@@ -638,7 +704,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: `SUB-${Math.floor(100 + Math.random() * 900)}`,
       tournamentId,
       tournamentTitle: target.title,
-      game: target.game,
+      game: target.game as 'BGMI' | 'Free Fire',
       firstPlaceUid: firstUid,
       firstPlaceIgn: firstIgn,
       firstPlacePrize: firstPrize,

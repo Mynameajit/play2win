@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Tournament } from '@/lib/mockData'
+import { Tournament } from '@/hooks/useTournaments'
 import { useApp } from '@/context/AppContext'
 import { Trophy, Users, Clock, CheckCircle2, LogIn } from 'lucide-react'
 

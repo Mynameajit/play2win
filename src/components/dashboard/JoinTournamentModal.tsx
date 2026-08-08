@@ -44,7 +44,7 @@ export const JoinTournamentModal: React.FC = () => {
 
   const handleVerify = () => {
     if (!gameUid) return
-    const res = verifyGameUid(gameUid, selectedTournament.game)
+    const res = verifyGameUid(gameUid, selectedTournament.game as 'BGMI' | 'Free Fire')
     if (res.valid && res.ign) {
       setNickname(res.ign)
       setIsUidVerified(true)

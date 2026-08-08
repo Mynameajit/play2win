@@ -4,6 +4,7 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'dummyimage.com' },
+      { protocol: 'https', hostname: 'placehold.co' },
       { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'https', hostname: 'akm-img-a-in.tosshub.com' },
       { protocol: 'https', hostname: 'sm.ign.com' }

@@ -96,6 +96,14 @@ export const Navbar: React.FC = () => {
               >
                 Wallet
               </Link>
+              <Link
+                href="/support"
+                className={`px-3 py-1 rounded-xl text-xs font-semibold ${
+                  pathname.startsWith('/support') ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                Support
+              </Link>
             </>
           )}
 
