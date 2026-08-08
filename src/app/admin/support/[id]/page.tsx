@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useApp } from '@/context/AppContext'
 import { apiClient } from '@/lib/apiClient'
 import { useSocket } from '@/context/SocketContext'
@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button'
 import { uploadToCloudinary } from '@/lib/cloudinary'
 import { Skeleton } from '@/components/ui/skeleton'
 
-export default function AdminSupportChatPage({ params }: { params: { id: string } }) {
+export default function AdminSupportChatPage() {
+  const params = useParams()
   const router = useRouter()
   const { userRole, showToast, user } = useApp()
   const { socket } = useSocket()

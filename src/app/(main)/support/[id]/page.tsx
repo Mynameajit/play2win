@@ -1,17 +1,18 @@
 'use client'
 
 import React, { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useApp } from '@/context/AppContext'
 import { apiClient } from '@/lib/apiClient'
 import { useSocket } from '@/context/SocketContext'
 import { PageHeader } from '@/components/common/PageHeader'
-import { ArrowLeft, Send, Image as ImageIcon, Check, CheckCheck, Loader2, User, Shield } from 'lucide-react'
+import { ArrowLeft, Send, Image as ImageIcon, Check, CheckCheck, Loader2, User, Shield, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { uploadToCloudinary } from '@/lib/cloudinary'
 import { Skeleton } from '@/components/ui/skeleton'
 
-export default function SupportChatPage({ params }: { params: { id: string } }) {
+export default function SupportChatPage() {
+  const params = useParams()
   const router = useRouter()
   const { userRole, showToast, user } = useApp()
   const { socket } = useSocket()

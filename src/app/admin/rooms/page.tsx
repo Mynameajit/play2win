@@ -14,7 +14,7 @@ import { toast } from '@/hooks/use-toast'
 import { KeyRound, ShieldAlert, Send } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 
-export default function AdminRoomsPage() {
+function AdminRoomsContent() {
   const searchParams = useSearchParams()
   const initialMatchId = searchParams?.get('matchId') || ''
   
@@ -204,5 +204,13 @@ export default function AdminRoomsPage() {
         )
       )}
     </div>
+  )
+}
+
+export default function AdminRoomsPage() {
+  return (
+    <React.Suspense fallback={<SkeletonLoader className="h-64" />}>
+      <AdminRoomsContent />
+    </React.Suspense>
   )
 }

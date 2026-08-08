@@ -23,8 +23,13 @@ export default function NewSupportTicketPage() {
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
 
+  React.useEffect(() => {
+    if (userRole === 'guest') {
+      router.replace('/login')
+    }
+  }, [userRole, router])
+
   if (userRole === 'guest') {
-    router.replace('/login')
     return null
   }
 

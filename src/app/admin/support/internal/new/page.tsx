@@ -14,8 +14,13 @@ export default function NewInternalTicketPage() {
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
 
+  React.useEffect(() => {
+    if (userRole !== 'admin') {
+      router.replace('/login')
+    }
+  }, [userRole, router])
+
   if (userRole !== 'admin') {
-    router.replace('/login')
     return null
   }
 

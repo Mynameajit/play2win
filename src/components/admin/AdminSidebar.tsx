@@ -11,7 +11,8 @@ import {
   LifeBuoy,
   UserCircle,
   FileUp,
-  KeyRound
+  KeyRound,
+  Gamepad2
 } from 'lucide-react'
 
 import {
@@ -59,7 +60,16 @@ export function AdminSidebar() {
   return (
     <Sidebar variant="inset" className="hidden md:flex">
       <SidebarHeader className="h-16 flex items-center justify-center border-b px-4">
-        <h2 className="text-lg font-bold tracking-tight text-primary">ADMIN PANEL</h2>
+        {/* Logo Section */}
+        <div className="flex items-center gap-2 w-full px-2">
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
+            <Gamepad2 className="size-5" />
+          </div>
+          <div className="flex flex-col gap-0.5 leading-none">
+            <span className="font-bold text-sm tracking-tight text-white">PLAY2EARN</span>
+            <span className="text-[10px] font-semibold text-cyan-400 tracking-wider">ADMIN</span>
+          </div>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         {data.navMain.map((group) => (

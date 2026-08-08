@@ -106,14 +106,9 @@ export default function AdminMatchesPage() {
                     </TableCell>
                     <TableCell className="text-right whitespace-nowrap">
                       <div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/admin/participants?matchId=${match.id}`}>
-                            Participants
-                          </Link>
-                        </Button>
                         <Button size="sm" asChild>
-                          <Link href={`/admin/rooms?matchId=${match.id}`}>
-                            Room
+                          <Link href={`/admin/matches/${match.id}`}>
+                            View
                           </Link>
                         </Button>
                       </div>
@@ -154,14 +149,9 @@ export default function AdminMatchesPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="p-3 pt-0 flex gap-2">
-                  <Button variant="outline" size="sm" className="w-full text-xs h-8" asChild>
-                    <Link href={`/admin/participants?matchId=${match.id}`}>
-                      Participants
-                    </Link>
-                  </Button>
                   <Button size="sm" className="w-full text-xs h-8" asChild>
-                    <Link href={`/admin/rooms?matchId=${match.id}`}>
-                      Manage Room
+                    <Link href={`/admin/matches/${match.id}`}>
+                      View Match Details
                     </Link>
                   </Button>
                 </CardFooter>

@@ -582,6 +582,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return false
     } catch (e: any) {
       console.error(e)
+      const errCode = e.response?.data?.error
+      if (errCode === 'already_joined') {
+        setJoinedTournamentIds(prev => {
+          if (!prev.includes(tournamentId)) return [...prev, tournamentId]
+          return prev
+        })
+        showToast('You have already joined this match roster.', 'success')
+        return true
+      }
       showToast(e.response?.data?.message || 'Failed to join tournament roster.', 'error')
       return false
     }

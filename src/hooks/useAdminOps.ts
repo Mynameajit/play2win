@@ -52,7 +52,7 @@ export async function uploadImage(file: File): Promise<string> {
   const response = await apiClient.post('/admin-ops/upload/image', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
-  return response.data.imageUrl // Assuming backend returns { imageUrl: '...' }
+  return response.data.url || response.data.imageUrl
 }
 
 export function useAdminOpenRoom() {
