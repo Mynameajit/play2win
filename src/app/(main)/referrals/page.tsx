@@ -58,7 +58,7 @@ export default function ReferralsPage() {
         <div className="space-y-2 text-center sm:text-left flex-1">
           <h3 className="text-lg sm:text-xl font-black text-white">Refer Friends & Earn Cash Rewards!</h3>
           <p className="text-xs text-slate-300 leading-normal">
-            Invite your gamer friends to join Play2Earn. You get <strong className="text-emerald-400">₹25 cash</strong> credited to your wallet for each friend who registers and joins their first match lobby!
+            Invite your gamer friends to join BattleX. You get <strong className="text-emerald-400">₹25 cash</strong> credited to your wallet for each friend who registers and joins their first match lobby!
           </p>
         </div>
       </div>

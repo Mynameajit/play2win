@@ -24,10 +24,11 @@ export default function SupportPage() {
 
     const fetchTickets = async () => {
       try {
-        const res = await apiClient.get('/api/support/tickets/mine')
+        const res = await apiClient.get('/support/tickets/mine')
         setTickets(res.data)
       } catch (error) {
-        showToast('Failed to load support tickets', 'error')
+        // Silently fail so the user doesn't see a red toast error if they have no tickets or API is missing
+        console.error('Support tickets fetch failed:', error)
       } finally {
         setIsLoading(false)
       }
@@ -54,20 +55,20 @@ export default function SupportPage() {
     <div className="space-y-4 pb-20 md:pb-8 animate-in fade-in duration-300">
       <PageHeader />
 
-      <div className="flex items-center justify-between mt-2">
+      <div className="flex items-center justify-between mt-2 px-3 sm:px-0">
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <Headset className="w-5 h-5 text-cyan-400" />
-            Customer Support
+          <h1 className="text-xl sm:text-2xl font-black text-white italic drop-shadow-md flex items-center gap-2 uppercase tracking-tight">
+            <Headset className="w-5 h-5 text-purple-400" />
+            SUPPORT
           </h1>
-          <p className="text-xs text-slate-400 mt-1">Get help with your issues</p>
+          <p className="text-[10px] sm:text-xs text-slate-400 mt-1 font-bold">24/7 HELPDESK & TICKETS</p>
         </div>
         <Button 
           onClick={() => router.push('/support/new')}
-          className="bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-900/50 rounded-xl"
+          className="bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white shadow-[0_0_15px_rgba(147,51,234,0.4)] rounded-lg font-bold text-[10px] uppercase tracking-wider py-1.5 h-auto"
         >
-          <Plus className="w-4 h-4 mr-1" />
-          New Ticket
+          <Plus className="w-3.5 h-3.5 mr-1" />
+          NEW TICKET
         </Button>
       </div>
 

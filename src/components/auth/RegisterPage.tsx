@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useApp } from '@/context/AppContext'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
@@ -70,30 +71,62 @@ export const RegisterPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center py-6 px-2 text-white">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.25 }}
-        className="glass-card rounded-3xl p-6 sm:p-8 max-w-md w-full border border-purple-500/30 shadow-2xl relative overflow-hidden"
-      >
-        
-        {/* Brand Header */}
-        <div className="text-center space-y-2 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-cyan-400 p-0.5 mx-auto mb-2">
-            <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-              <Gamepad2 className="w-6 h-6 text-cyan-400" />
-            </div>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-black text-white">Create Account</h2>
-          <p className="text-xs text-slate-400">Join the arena and compete to earn cash rewards.</p>
-        </div>
+    <div className="min-h-full bg-slate-950 flex flex-col items-center relative overflow-hidden pb-10">
+      
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 top-0 left-0 right-0 h-[30vh] md:h-[55vh] z-0">
+        <Image 
+          src="/images/authbeenar.png" 
+          alt="Background" 
+          fill 
+          className="object-cover opacity-70 mix-blend-screen"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0b001a]/20 via-[#0b001a]/80 to-slate-950" />
+      </div>
 
+      {/* Top Bar with Back Button */}
+      <div className="w-full max-w-md p-4 relative z-10 flex items-center justify-between">
+        <button 
+          onClick={() => router.back()} 
+          className="w-10 h-10 rounded-full bg-slate-900/60 border border-white/10 flex items-center justify-center text-white backdrop-blur-md hover:bg-slate-800 transition-colors"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+      </div>
+
+      {/* Header Info */}
+      <div className="w-full max-w-md px-2 text-center relative z-10 mt-2 mb-6">
+        <div className="flex justify-center mb-6">
+          <div className="relative w-48 h-16">
+            {/* <Image 
+              src="/images/logo.png" 
+              alt="BattleX" 
+              fill 
+              className="object-contain"
+              priority
+            /> */}
+          </div>
+        </div>
+        
+        {/* <p className="text-xs text-slate-300 font-medium max-w-xs mx-auto leading-relaxed">Join the arena and compete to earn cash rewards.</p> */}
+      </div>
+
+      {/* Form Container */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-md px-4 relative z-10"
+      >
+        <div className="bg-[#0b0a15] rounded-3xl p-6 border border-purple-500/20 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+
+        <h2 className="text-3xl font-black text-center text-white italic tracking-tight mb-2 uppercase drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">CREATE ACCOUNT</h2>
         {/* Register Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5 py-6">
           
           {/* Username */}
-          <div className="space-y-1">
+          <div className="space-y-1 ">
             <label className="block text-xs font-bold text-slate-200">Username</label>
             <div className="relative">
               <input
@@ -226,6 +259,7 @@ export const RegisterPage: React.FC = () => {
           </Link>
         </div>
 
+        </div>
       </motion.div>
     </div>
   )

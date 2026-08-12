@@ -6,6 +6,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useApp } from '@/context/AppContext'
 import { Gamepad2, Bell, PlusCircle, LogIn, ShieldCheck, Crown, LogOut } from 'lucide-react'
 
+import Image from 'next/image'
+
 export const Navbar: React.FC = () => {
   const pathname = usePathname()
   const router = useRouter()
@@ -16,94 +18,93 @@ export const Navbar: React.FC = () => {
   const userFirstLetter = user.name ? user.name.charAt(0).toUpperCase() : 'U'
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 w-full bg-slate-950/80 backdrop-blur-xl shadow-sm border-b border-white/5 px-2 sm:px-4 py-2">
+    <header className="sticky top-0 z-50 w-full bg-[#0d0914]/90 backdrop-blur-xl shadow-sm border-b border-white/5 px-2 sm:px-4 py-2.5">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-1">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-1.5 cursor-pointer shrink-0">
-          <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-500 to-cyan-400 p-0.5 shadow-md">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <Gamepad2 className="w-4 h-4 text-cyan-400" />
+        <Link href="/" className="flex items-center gap-2 cursor-pointer shrink-0">
+          <div className="flex items-center gap-1.5">
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10">
+              <Image src="/images/logo.png" alt="BattleX" fill className="object-contain" />
             </div>
+            <span className="text-base sm:text-lg font-black italic tracking-tighter text-white drop-shadow-md">
+              BATTLE<span className="text-orange-500 font-extrabold drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]">X</span>
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-1">
-              <span className="font-extrabold text-sm sm:text-lg tracking-tight text-white">
-                PLAY<span className="text-purple-500">2</span>EARN
-              </span>
-              {userRole !== 'guest' && (
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase ${
-                  userRole === 'admin' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
-                  userRole === 'superadmin' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
-                  'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                }`}>
-                  {userRole === 'admin' ? 'ROOM ADMIN' : userRole === 'superadmin' ? 'SUPER ADMIN' : 'GAMER'}
-                </span>
-              )}
-            </div>
-            <p className="text-[8px] text-slate-400 hidden sm:block tracking-wider">BGMI & FREE FIRE</p>
-          </div>
+          {userRole !== 'guest' && (
+            <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase mt-0.5 ${
+              userRole === 'admin' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
+              userRole === 'superadmin' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+              'bg-purple-500/20 text-purple-300 border-purple-500/30'
+            }`}>
+              {userRole === 'admin' ? 'ROOM ADMIN' : userRole === 'superadmin' ? 'SUPER ADMIN' : 'GAMER'}
+            </span>
+          )}
         </Link>
 
         {/* Center: Navigation Links */}
         <nav className="hidden md:flex items-center gap-1 bg-slate-800/40 backdrop-blur-md p-1 rounded-2xl border border-white/5 shadow-inner">
-          {userRole === 'user' && (
+          {(userRole === 'user' || userRole === 'guest') && (
             <>
               <Link
-                href="/"
+                href={userRole === 'user' ? '/dashboard' : '/'}
                 className={`px-3 py-1 rounded-xl text-xs font-semibold ${
-                  pathname === '/' ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
+                  (userRole === 'user' && pathname === '/dashboard') || (userRole === 'guest' && pathname === '/') ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
                 }`}
               >
                 Home
               </Link>
               <Link
-                href="/dashboard"
+                href="/tournaments"
                 className={`px-3 py-1 rounded-xl text-xs font-semibold ${
-                  pathname.startsWith('/dashboard') || pathname.startsWith('/matches') ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
+                  pathname.startsWith('/tournaments') || pathname.startsWith('/matches') ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
                 }`}
               >
                 Matches
               </Link>
-              <Link
-                href="/my-tournaments"
-                className={`px-3 py-1 rounded-xl text-xs font-semibold ${
-                  pathname === '/my-tournaments' ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                My Tournaments
-              </Link>
-              <Link
-                href="/leaderboard"
-                className={`px-3 py-1 rounded-xl text-xs font-semibold ${
-                  pathname === '/leaderboard' ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                Leaderboard
-              </Link>
-              <Link
-                href="/referrals"
-                className={`px-3 py-1 rounded-xl text-xs font-semibold ${
-                  pathname === '/referrals' ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                Refer & Earn
-              </Link>
-              <Link
-                href="/wallet"
-                className={`px-3 py-1 rounded-xl text-xs font-semibold ${
-                  pathname === '/wallet' ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                Wallet
-              </Link>
-              <Link
-                href="/support"
-                className={`px-3 py-1 rounded-xl text-xs font-semibold ${
-                  pathname.startsWith('/support') ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                Support
-              </Link>
+              {userRole === 'user' && (
+                <>
+                  <Link
+                    href="/my-tournaments"
+                    className={`px-3 py-1 rounded-xl text-xs font-semibold ${
+                      pathname === '/my-tournaments' ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    My Tournaments
+                  </Link>
+                  <Link
+                    href="/leaderboard"
+                    className={`px-3 py-1 rounded-xl text-xs font-semibold ${
+                      pathname === '/leaderboard' ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    Leaderboard
+                  </Link>
+                  <Link
+                    href="/referrals"
+                    className={`px-3 py-1 rounded-xl text-xs font-semibold ${
+                      pathname === '/referrals' ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    Refer & Earn
+                  </Link>
+                  <Link
+                    href="/wallet"
+                    className={`px-3 py-1 rounded-xl text-xs font-semibold ${
+                      pathname === '/wallet' ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    Wallet
+                  </Link>
+                  <Link
+                    href="/support"
+                    className={`px-3 py-1 rounded-xl text-xs font-semibold ${
+                      pathname.startsWith('/support') ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    Support
+                  </Link>
+                </>
+              )}
             </>
           )}
 

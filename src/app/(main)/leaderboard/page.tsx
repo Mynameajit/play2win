@@ -75,7 +75,7 @@ export default function LeaderboardPage() {
       ) : (
         <div className="space-y-4">
           
-          {/* Top 3 podium layout */}
+            {/* Top 3 podium layout */}
           {leaderboardData.length >= 3 && (
             <div className="grid grid-cols-3 items-end gap-3 sm:gap-6 max-w-lg mx-auto py-4">
               
@@ -88,7 +88,7 @@ export default function LeaderboardPage() {
                   <span className="absolute -bottom-1 -right-1 text-xs">🥈</span>
                 </div>
                 <div className="text-center">
-                  <span className="block text-xs font-bold text-white truncate max-w-[80px]">@{leaderboardData[1].player}</span>
+                  <span className="block text-xs font-bold text-white truncate max-w-[80px]">{leaderboardData[1].name}</span>
                   <span className="block text-[9px] text-slate-400">{leaderboardData[1].wins} Wins</span>
                 </div>
               </div>
@@ -102,7 +102,7 @@ export default function LeaderboardPage() {
                   <span className="absolute -bottom-1 -right-1 text-lg">🏆</span>
                 </div>
                 <div className="text-center">
-                  <span className="block text-sm font-extrabold text-white truncate max-w-[100px]">@{leaderboardData[0].player}</span>
+                  <span className="block text-sm font-extrabold text-white truncate max-w-[100px]">{leaderboardData[0].name}</span>
                   <span className="block text-[10px] text-amber-400 font-bold">{leaderboardData[0].wins} Wins</span>
                 </div>
               </div>
@@ -116,7 +116,7 @@ export default function LeaderboardPage() {
                   <span className="absolute -bottom-1 -right-1 text-xs">🥉</span>
                 </div>
                 <div className="text-center">
-                  <span className="block text-xs font-bold text-white truncate max-w-[80px]">@{leaderboardData[2].player}</span>
+                  <span className="block text-xs font-bold text-white truncate max-w-[80px]">{leaderboardData[2].name}</span>
                   <span className="block text-[9px] text-slate-400">{leaderboardData[2].wins} Wins</span>
                 </div>
               </div>
@@ -130,7 +130,8 @@ export default function LeaderboardPage() {
               <thead className="bg-slate-950/80 text-slate-400 border-b border-white/10">
                 <tr>
                   <th className="p-3 font-semibold w-12 text-center">Rank</th>
-                  <th className="p-3 font-semibold">Username</th>
+                  <th className="p-3 font-semibold">Player</th>
+                  <th className="p-3 font-semibold">Game UID</th>
                   <th className="p-3 font-semibold text-center">Matches</th>
                   <th className="p-3 font-semibold text-center">Wins</th>
                   <th className="p-3 font-semibold text-center">Kills</th>
@@ -144,14 +145,16 @@ export default function LeaderboardPage() {
                     <td className="p-3 text-center font-bold text-slate-300">
                       {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : user.rank === 3 ? '🥉' : `#${user.rank}`}
                     </td>
-                    <td className="p-3 text-white font-extrabold flex items-center gap-1.5">
-                      <span>@{user.player}</span>
+                    <td className="p-3 text-white font-extrabold flex flex-col gap-0.5">
+                      <span className="line-clamp-1">{user.name}</span>
+                      <span className="text-[9px] text-slate-500">@{user.username}</span>
                     </td>
+                    <td className="p-3 text-slate-300 font-mono text-[10px]">{user.uid}</td>
                     <td className="p-3 text-center text-slate-300 font-mono">{user.matches}</td>
                     <td className="p-3 text-center text-amber-400 font-mono font-bold">{user.wins}</td>
                     <td className="p-3 text-center text-slate-300 font-mono">{user.kills}</td>
                     <td className="p-3 text-center text-cyan-400 font-mono">{user.winRate}</td>
-                    <td className="p-3 text-right text-emerald-400 font-black">₹{user.prize}</td>
+                    <td className="p-3 text-right text-emerald-400 font-black">₹{user.totalWinnings || 0}</td>
                   </tr>
                 ))}
               </tbody>

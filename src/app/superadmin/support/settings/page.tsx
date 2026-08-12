@@ -27,7 +27,7 @@ export default function SupportSettingsPage() {
 
     const fetchSettings = async () => {
       try {
-        const res = await apiClient.get('/api/support/settings')
+        const res = await apiClient.get('/support/settings')
         if (res.data) {
           setSettings(res.data)
         }
@@ -45,7 +45,7 @@ export default function SupportSettingsPage() {
     e.preventDefault()
     setIsSaving(true)
     try {
-      await apiClient.put('/api/support/superadmin/settings', settings)
+      await apiClient.put('/support/superadmin/settings', settings)
       showToast('Settings saved successfully', 'success')
     } catch (error) {
       showToast('Failed to save settings', 'error')

@@ -1,169 +1,236 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Tournament } from '@/hooks/useTournaments'
+import { Tournament, useMyMatches } from '@/hooks/useTournaments'
+import { useUserProfile } from '@/hooks/useProfileQuery'
 import { useApp } from '@/context/AppContext'
-import { Trophy, Users, Clock, CheckCircle2, LogIn } from 'lucide-react'
+import { Trophy, Users, Clock, Calendar, Sword } from 'lucide-react'
 
 interface TournamentCardProps {
   tournament: Tournament
-  onJoinClick: (tournament: Tournament) => void
+  onJoinClick?: (tournament: Tournament) => void
 }
 
 export const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onJoinClick }) => {
   const router = useRouter()
-  const { userRole, joinedTournamentIds, showToast } = useApp()
-  const isJoined = joinedTournamentIds.includes(tournament.id)
-  const slotPercentage = Math.round((tournament.joinedSlots / tournament.totalSlots) * 100)
+  const { setSelectedTournament, setIsJoinModalOpen } = useApp()
+  const { data: user, isLoading: isUserLoading, isError: isUserError } = useUserProfile()
+  const { data: myMatches = [] } = useMyMatches()
+  
+  const userRole = isUserError || !user ? 'guest' : 'user'
+  const isJoined = myMatches.some((m: any) => m.tournamentId === tournament.id)
+  
+  const isBgmi = tournament.game === 'BGMI' || tournament.game?.toLowerCase().includes('bgmi')
+  const isFreeFire = tournament.game === 'Free Fire' || tournament.game === 'FREE FIRE' || tournament.game?.toLowerCase().includes('free fire')
 
-  const isBgmi = tournament.game === 'BGMI'
-  const isSingleWinner = tournament.contestType === 'SINGLE_WINNER' || tournament.contestType === '1v1_DUEL'
-
-  const handleCardJoinClick = () => {
+  const handleCardJoinClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     if (userRole === 'guest') {
-      showToast('Please sign in to join tournaments!', 'info')
-      router.push('/login')
+      router.push(`/login?redirect=/matches/${tournament.id}`)
     } else {
-      onJoinClick(tournament)
+      setSelectedTournament(tournament)
+      setIsJoinModalOpen(true)
     }
   }
 
+  // Countdown timer logic
+  const [timeLeft, setTimeLeft] = useState<{ hrs: string, mins: string, secs: string } | null>(null)
+  
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      try {
+        if (!tournament.startTime) {
+          setTimeLeft(null)
+          return
+        }
+        const start = new Date(tournament.startTime).getTime()
+        const now = new Date().getTime()
+        const diff = start - now
+        if (diff <= 0 || tournament.status === 'COMPLETED') {
+          setTimeLeft(null)
+        } else {
+          const hrs = Math.floor(diff / (1000 * 60 * 60))
+          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+          const secs = Math.floor((diff % (1000 * 60)) / 1000)
+          setTimeLeft({
+            hrs: hrs.toString().padStart(2, '0'),
+            mins: mins.toString().padStart(2, '0'),
+            secs: secs.toString().padStart(2, '0')
+          })
+        }
+      } catch (err) {
+        setTimeLeft(null)
+      }
+    }
+    
+    calculateTimeLeft()
+    const timer = setInterval(calculateTimeLeft, 1000)
+    return () => clearInterval(timer)
+  }, [tournament.startTime, tournament.status])
+
+  const isWinner = user?.matchResultsWon?.some((won: any) => won.tournamentId === tournament.id)
+
+  let btnText = 'JOIN'
+  let isBtnDisabled = false
+  let btnClass = 'bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_10px_rgba(147,51,234,0.3)]'
+
+  if (userRole === 'guest') {
+    btnText = 'SIGN IN'
+  } else if (tournament.status === 'COMPLETED' || tournament.status === 'CANCELED' || tournament.status === 'RESULT_PENDING' || tournament.status === 'PRIZE_DISTRIBUTED') {
+    btnText = tournament.status === 'CANCELED' ? 'CANCELED' : 'COMPLETED'
+    isBtnDisabled = true
+    btnClass = 'bg-[#1a1525] border border-white/5 text-slate-500 cursor-not-allowed'
+  } else if (isJoined) {
+    btnText = 'JOINED'
+    btnClass = 'bg-slate-900 border border-purple-500 text-purple-400 opacity-70 cursor-not-allowed'
+    isBtnDisabled = true
+  } else if (tournament.joinedSlots >= tournament.totalSlots) {
+    btnText = 'FULL'
+    isBtnDisabled = true
+    btnClass = 'bg-[#1a1525] border border-white/5 text-slate-500 cursor-not-allowed'
+  }
+
+  // Properly format date and time from ISO string
+  let formattedDate = 'TBA'
+  let formattedTime = 'TBA'
+  if (tournament.startTime) {
+    try {
+      const dateObj = new Date(tournament.startTime)
+      if (!isNaN(dateObj.getTime())) {
+        formattedDate = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        formattedTime = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+      } else {
+        const parts = tournament.startTime.split(' ')
+        formattedDate = parts[0] || 'TBA'
+        formattedTime = parts.slice(1).join(' ') || 'TBA'
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  const bannerImage = (tournament.banner && tournament.banner.trim() !== '') 
+    ? tournament.banner 
+    : (isBgmi ? 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80' : 'https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?auto=format&fit=crop&q=80')
+
   return (
-    <div className="glass-card rounded-2xl overflow-hidden border border-white/10 relative flex flex-col justify-between group">
-      {/* Banner & Badges Overlay */}
-      <Link href={`/matches/${tournament.id}`} className="relative h-24 sm:h-32 w-full overflow-hidden bg-slate-900 block">
-        <img
-          src={tournament.banner || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80'}
-          alt={tournament.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+    <Link href={`/matches/${tournament.id}`} className="block">
+      <div className={`flex bg-[#0b0812] rounded-xl overflow-hidden border ${isWinner ? 'border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]' : 'border-white/5'} relative group hover:border-purple-500/30 transition-all shadow-lg p-1.5 gap-2 min-h-[110px] w-full max-w-full`}>
+        
+        {/* Left Side: Image (Full height) */}
+        <div className="relative w-[100px] shrink-0 h-auto rounded-md overflow-hidden border border-white/5">
+          <img
+            src={bannerImage}
+            alt={tournament.title}
+            className="absolute inset-0 w-full h-full object-cover bg-slate-900 group-hover:scale-105 transition-transform duration-500"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0b0812] via-transparent to-transparent opacity-90" />
+          
+          {/* Top Status Badge */}
+          <div className="absolute top-1 left-1">
+            <span
+              className={`px-1.5 py-0.5 rounded-[3px] text-[6px] font-black tracking-wider uppercase shadow-md border backdrop-blur-md ${
+                tournament.status === 'LIVE' ? 'bg-red-500/90 text-white border-red-500' : 
+                tournament.status === 'COMPLETED' || tournament.status === 'PRIZE_DISTRIBUTED' || tournament.status === 'RESULT_PENDING' ? 'bg-slate-600/90 text-white border-slate-500' : 
+                tournament.status === 'ROOM_OPEN' ? 'bg-cyan-500/90 text-white border-cyan-500' : 
+                'bg-emerald-500/90 text-white border-emerald-500'
+              }`}
+            >
+              {tournament.status === 'ROOM_OPEN' ? 'ROOM OPEN' : 
+               (tournament.status === 'COMPLETED' || tournament.status === 'PRIZE_DISTRIBUTED' || tournament.status === 'RESULT_PENDING') ? 'COMPLETED' : 
+               tournament.status}
+            </span>
+          </div>
 
-        {/* Top Badges */}
-        <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between">
-          <span
-            className={`px-2 py-0.5 rounded text-[9px] font-black tracking-wider uppercase border backdrop-blur-md ${
-              isBgmi ? 'bg-purple-600/90 border-purple-400/50 text-white' : 'bg-cyan-600/90 border-cyan-400/50 text-white'
-            }`}
-          >
-            {tournament.game}
-          </span>
-
-          {tournament.status === 'LIVE' ? (
-            <span className="px-1.5 py-0.5 rounded bg-red-600 text-white font-black text-[9px] border border-red-400/50 animate-pulse">
-              LIVE
-            </span>
-          ) : tournament.status === 'COMPLETED' ? (
-            <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-bold text-[9px]">
-              FINISHED
-            </span>
-          ) : (
-            <span className="px-1.5 py-0.5 rounded bg-emerald-600/90 text-white font-bold text-[9px] backdrop-blur-md">
-              UPCOMING
-            </span>
+          {/* Winner Indicator Badge (if user won) */}
+          {isWinner && (
+            <div className="absolute bottom-1 left-1 right-1 flex justify-center">
+              <span className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white text-[8px] font-black tracking-widest px-2 py-0.5 rounded-sm shadow-[0_0_10px_rgba(234,179,8,0.5)] border border-yellow-400/50 uppercase w-full text-center flex items-center justify-center gap-0.5">
+                <Trophy className="w-2.5 h-2.5" /> YOU WON!
+              </span>
+            </div>
           )}
         </div>
 
-        {/* Contest Type Badge */}
-        <div className="absolute bottom-1 left-1.5 right-1.5">
-          <span className={`px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-bold border backdrop-blur-md truncate block ${
-            isSingleWinner ? 'bg-amber-500/25 text-amber-300 border-amber-500/40' : 'bg-purple-500/25 text-purple-300 border-purple-500/40'
-          }`}>
-            {isSingleWinner ? '🏆 1st Rank Takes All' : '🏆 Top 3 Winners'}
-          </span>
-        </div>
-      </Link>
-
-      {/* Card Content Body */}
-      <div className="p-2.5 sm:p-3 flex-1 flex flex-col justify-between space-y-2">
-        <div>
-          <Link href={`/matches/${tournament.id}`}>
-            <h3 className="font-extrabold text-xs sm:text-sm text-slate-100 line-clamp-1 group-hover:text-purple-300 transition-colors">
+        {/* Right Side: Content */}
+        <div className="flex flex-col flex-1 py-0.5 min-w-0">
+          
+          {/* Header Row */}
+          <div className="mb-1 flex items-start gap-1.5">
+            <span
+              className={`px-1.5 py-0.5 rounded-[3px] text-[6px] font-black tracking-wider uppercase shadow-md shrink-0 mt-0.5 ${
+                isBgmi ? 'bg-blue-600 text-white' : 
+                isFreeFire ? 'bg-orange-600 text-white' : 
+                'bg-purple-600 text-white'
+              }`}
+            >
+              {tournament.game}
+            </span>
+            <h3 className="font-bold text-[12px] text-white leading-tight pr-1 line-clamp-1 w-full">
               {tournament.title}
             </h3>
-          </Link>
-
-          <div className="flex items-center gap-1 text-[9px] text-slate-400 mt-0.5">
-            <Clock className="w-3 h-3 text-cyan-400 shrink-0" />
-            <span className="truncate">{tournament.startTime}</span>
           </div>
 
-          {/* Key Metrics Grid */}
-          <div className="grid grid-cols-2 gap-1 my-2 p-1.5 rounded-xl bg-slate-900/90 border border-white/10 text-center">
-            <div>
-              <p className="text-[8px] text-slate-400 uppercase font-semibold">Prize Pool</p>
-              <p className="text-xs font-black text-emerald-400">₹{tournament.prizePool.toLocaleString()}</p>
-            </div>
-            <div className="border-l border-white/10">
-              <p className="text-[8px] text-slate-400 uppercase font-semibold">Entry Fee</p>
-              <p className="text-xs font-black text-slate-100">
-                {tournament.entryFee === 0 ? <span className="text-emerald-400">FREE</span> : `₹${tournament.entryFee}`}
-              </p>
-            </div>
+          {/* Date & Inline Timer */}
+          <div className="flex items-center gap-1 text-[8px] text-slate-300 font-medium mb-1.5 bg-slate-900/40 w-max px-1.5 py-0.5 rounded-[4px] border border-white/5">
+            <Calendar className="w-2.5 h-2.5 text-purple-400" />
+            <span>{formattedDate} {formattedTime}</span>
+            {timeLeft && (
+              <>
+                <span className="text-slate-600 mx-0.5">|</span>
+                <Clock className="w-2.5 h-2.5 text-cyan-400 animate-pulse" />
+                <span className="text-cyan-400 font-bold font-mono tracking-wide">
+                  {timeLeft.hrs}:{timeLeft.mins}:{timeLeft.secs}
+                </span>
+              </>
+            )}
           </div>
 
-          {/* Slot Progress Bar */}
-          <div className="space-y-0.5 mb-2">
-            <div className="flex items-center justify-between text-[9px] font-semibold text-slate-300">
-              <span className="flex items-center gap-0.5">
-                <Users className="w-2.5 h-2.5 text-purple-400" />
-                Slots
-              </span>
-              <span>
-                <strong className="text-purple-300">{tournament.joinedSlots}</strong>/{tournament.totalSlots}
+          {/* Prize & Entry Block */}
+          <div className="flex items-center bg-[#15111c] rounded-md border border-white/5 py-1 px-1.5 mb-1.5 w-full shadow-inner">
+            <div className="flex-1">
+              <span className="block text-[6px] text-slate-500 font-bold uppercase tracking-widest mb-[1px]">WINNINGS</span>
+              <span className="block text-[11px] font-black text-emerald-400 leading-none tracking-tight">₹{tournament.prizePool}</span>
+            </div>
+            <div className="w-[1px] h-4 bg-white/10 mx-1.5" />
+            <div className="flex-1">
+              <span className="block text-[6px] text-slate-500 font-bold uppercase tracking-widest mb-[1px]">ENTRY FEE</span>
+              <span className="block text-[11px] font-black text-white leading-none tracking-tight">
+                {tournament.entryFee === 0 ? 'FREE' : `₹${tournament.entryFee}`}
               </span>
             </div>
-            <div className="w-full h-1.5 rounded-full bg-slate-900 border border-white/10 overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  isBgmi ? 'bg-gradient-to-r from-purple-600 to-cyan-500' : 'bg-gradient-to-r from-cyan-500 to-emerald-400'
-                }`}
-                style={{ width: `${slotPercentage}%` }}
-              />
-            </div>
           </div>
+
+          {/* Bottom Row: Mode/Slots & Button */}
+          <div className="flex items-center justify-between mt-auto pt-0.5">
+            <div className="flex flex-col gap-[1px]">
+              <span className="flex items-center gap-1 text-[8px] text-slate-400 font-medium">
+                <Sword className="w-2.5 h-2.5 text-purple-500" />
+                <span className="text-white font-bold">{tournament.mode}</span>
+              </span>
+              <span className="flex items-center gap-1 text-[8px] text-slate-400 font-medium">
+                <Users className="w-2.5 h-2.5 text-purple-500" />
+                <span>{tournament.joinedSlots}/{tournament.totalSlots}</span>
+              </span>
+            </div>
+            
+            <button
+              onClick={handleCardJoinClick}
+              disabled={isBtnDisabled}
+              className={`px-3 py-1.5 rounded-md font-black text-[9px] transition-all tracking-wider uppercase whitespace-nowrap ${btnClass}`}
+            >
+              {btnText}
+            </button>
+          </div>
+          
         </div>
-
-        {/* PROMINENT GLOWING JOIN BUTTON */}
-        {userRole !== 'guest' && isJoined ? (
-          <Link
-            href={`/matches/${tournament.id}`}
-            className="w-full py-2 rounded-xl bg-emerald-950/90 border border-emerald-500/60 text-emerald-300 font-extrabold text-[11px] flex items-center justify-center gap-1 shadow-md"
-          >
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="truncate">{tournament.roomCredsSent ? 'CREDS READY' : 'JOINED'}</span>
-          </Link>
-        ) : (
-          <button
-            onClick={handleCardJoinClick}
-            disabled={tournament.joinedSlots >= tournament.totalSlots || tournament.status !== 'UPCOMING'}
-            className={`w-full py-2 rounded-xl font-black text-[11px] flex items-center justify-center gap-1 shadow-lg transition-all ${
-              tournament.joinedSlots >= tournament.totalSlots || tournament.status !== 'UPCOMING'
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : userRole === 'guest'
-                ? 'bg-purple-700 hover:bg-purple-600 text-white shadow-purple-600/30'
-                : isBgmi
-                ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white shadow-purple-600/30 hover:scale-[1.02]'
-                : 'bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-500 hover:from-cyan-500 hover:to-emerald-400 text-white shadow-cyan-600/30 hover:scale-[1.02]'
-            }`}
-          >
-            {userRole === 'guest' ? <LogIn className="w-3.5 h-3.5" /> : <Trophy className="w-3.5 h-3.5" />}
-            <span>
-              {userRole === 'guest'
-                ? `SIGN IN TO JOIN (₹${tournament.entryFee})`
-                : tournament.status === 'COMPLETED' || tournament.status === 'PRIZE_DISTRIBUTED' || tournament.status === 'RESULT_PENDING'
-                ? 'FINISHED'
-                : tournament.status !== 'UPCOMING'
-                ? 'CLOSED'
-                : tournament.joinedSlots >= tournament.totalSlots
-                ? 'FULL'
-                : `JOIN (₹${tournament.entryFee})`}
-            </span>
-          </button>
-        )}
       </div>
-    </div>
+    </Link>
   )
 }

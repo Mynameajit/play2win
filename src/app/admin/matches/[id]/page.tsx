@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ArrowLeft, Users, Send, Upload, Trophy, Clock } from 'lucide-react'
+import { ArrowLeft, Users, Send, Upload, Trophy, Clock, ShieldAlert } from 'lucide-react'
 import { format } from 'date-fns'
 import { toast } from '@/hooks/use-toast'
 import Link from 'next/link'
@@ -33,7 +33,7 @@ export default function MatchDetailsPage() {
   
   // Fetch Participants
   const { data: participantsData, isLoading: isLoadingParticipants } = useAdminParticipants(matchId)
-  const participants = participantsData?.participants || []
+  const participants = Array.isArray(participantsData) ? participantsData : (participantsData?.participants || [])
 
   // Room Management State
   const [roomId, setRoomId] = useState('')
@@ -46,6 +46,8 @@ export default function MatchDetailsPage() {
   const [file, setFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const { mutate: uploadResult, isPending: isSubmittingResult } = useAdminUploadResults()
+  
+  const [activeDropdown, setActiveDropdown] = useState<number | null>(null)
 
   // Initialize data when match loads
   useEffect(() => {
@@ -63,6 +65,13 @@ export default function MatchDetailsPage() {
       }
     }
   }, [match])
+
+  const [currentTime, setCurrentTime] = useState(Date.now())
+  
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(Date.now()), 10000)
+    return () => clearInterval(timer)
+  }, [])
 
   // Handlers
   const handleRoomSubmit = (e: React.FormEvent) => {
@@ -128,38 +137,47 @@ export default function MatchDetailsPage() {
 
   const isCompleted = ['COMPLETED', 'PRIZE_DISTRIBUTED', 'RESULT_PENDING'].includes(match.status)
 
+  const matchStartTime = new Date(match.startTime).getTime()
+  const isRoomAllowed = currentTime >= matchStartTime - 5 * 60 * 1000
+  const isResultAllowed = currentTime >= matchStartTime + 5 * 60 * 1000
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => router.push('/admin/matches')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Match Details</h2>
-          <p className="text-muted-foreground">{match.title}</p>
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => router.push('/admin/matches')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="min-w-0">
+            <h2 className="text-lg font-bold tracking-tight leading-tight">Match Details</h2>
+            <p className="text-xs text-muted-foreground truncate">{match.title}</p>
+          </div>
         </div>
+        <Button size="sm" onClick={() => router.push(`/admin/participants?matchId=${matchId}`)} className="bg-purple-600 hover:bg-purple-700 text-white gap-2 h-8 w-full sm:w-auto">
+          <Users className="w-3 h-3" /> View Participants
+        </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Match Info Card */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Overview</CardTitle>
+        <Card className="lg:col-span-1 overflow-hidden">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-sm font-semibold text-muted-foreground">OVERVIEW</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center py-2 border-b">
+          <CardContent className="p-4 pt-0 space-y-1">
+            <div className="flex justify-between items-center py-1.5 border-b border-white/5 text-sm">
               <span className="text-muted-foreground">Game</span>
               <span className="font-medium">{match.game} - {match.mode}</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b">
+            <div className="flex justify-between items-center py-1.5 border-b border-white/5 text-sm">
               <span className="text-muted-foreground">Schedule</span>
-              <span className="font-medium">{format(new Date(match.startTime), 'PPP p')}</span>
+              <span className="font-medium text-xs">{format(new Date(match.startTime), 'PPP p')}</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b">
+            <div className="flex justify-between items-center py-1.5 border-b border-white/5 text-sm">
               <span className="text-muted-foreground">Status</span>
-              <Badge variant={match.status === 'LIVE' ? 'destructive' : 'default'}>{match.status}</Badge>
+              <Badge variant={match.status === 'LIVE' ? 'destructive' : 'default'} className="text-[10px] h-5">{match.status}</Badge>
             </div>
-            <div className="flex justify-between items-center py-2 border-b">
+            <div className="flex justify-between items-center py-1.5 text-sm">
               <span className="text-muted-foreground">Participants</span>
               <span className="font-medium">{match.joinedSlots} / {match.totalSlots}</span>
             </div>
@@ -167,118 +185,132 @@ export default function MatchDetailsPage() {
         </Card>
 
         {/* Room Management */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Room Management</CardTitle>
-            <CardDescription>Send room ID and password to all participants.</CardDescription>
+        <Card className="lg:col-span-2 overflow-hidden">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-[15px]">Room Management</CardTitle>
+            <CardDescription className="text-xs mt-0.5">Send room ID and password to all participants.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleRoomSubmit} className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Room ID</Label>
+          <CardContent className="p-4 pt-2">
+            <form onSubmit={handleRoomSubmit} className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Room ID</Label>
                   <Input 
                     value={roomId} 
                     onChange={e => setRoomId(e.target.value)} 
                     placeholder="Enter Room ID" 
-                    disabled={isCompleted}
+                    disabled={isCompleted || !isRoomAllowed}
+                    className="h-8 text-sm"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Password</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Password</Label>
                   <Input 
                     value={roomPassword} 
                     onChange={e => setRoomPassword(e.target.value)} 
                     placeholder="Enter Room Password" 
-                    disabled={isCompleted}
+                    disabled={isCompleted || !isRoomAllowed}
+                    className="h-8 text-sm"
                   />
                 </div>
               </div>
-              <Button type="submit" disabled={isUpdatingRoom || isCompleted || !roomId} className="gap-2">
-                <Send className="h-4 w-4" />
+              <Button type="submit" disabled={isUpdatingRoom || isCompleted || !roomId || !isRoomAllowed} className="gap-1 h-8 text-xs w-full sm:w-auto">
+                <Send className="h-3 w-3" />
                 {isUpdatingRoom ? 'Sending...' : 'Notify Participants'}
               </Button>
-              {isCompleted && <p className="text-xs text-muted-foreground mt-2">Cannot update room for completed matches.</p>}
+              {isCompleted && <p className="text-[10px] text-muted-foreground mt-1">Cannot update room for completed matches.</p>}
+              {!isCompleted && !isRoomAllowed && <p className="text-[10px] text-destructive mt-1 font-medium">Room management unlocks 5 minutes before match starts.</p>}
             </form>
           </CardContent>
         </Card>
       </div>
 
-      {/* Participants List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" /> Participants ({participants.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoadingParticipants ? (
-            <SkeletonLoader className="h-32" />
-          ) : participants.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No participants have joined yet.</p>
-          ) : (
-            <div className="rounded-md border max-h-[300px] overflow-y-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Game UID</TableHead>
-                    <TableHead>In-Game Name</TableHead>
-                    <TableHead>User Name</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {participants.map((p: any) => (
-                    <TableRow key={p.id}>
-                      <TableCell className="font-medium">{p.gameUid}</TableCell>
-                      <TableCell>{p.ign}</TableCell>
-                      <TableCell>{p.user?.fullName || 'N/A'}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+
 
       {/* Result Upload Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" /> Upload Results
+      <Card className="overflow-hidden">
+        <CardHeader className="p-4 pb-2">
+          <CardTitle className="text-[15px] flex items-center gap-1.5">
+            <Upload className="h-4 w-4" /> Upload Results
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs mt-0.5">
             {isCompleted 
               ? 'Results for this match have already been uploaded.' 
               : 'Submit winner details for review once the match is over.'}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-2">
           {isCompleted ? (
-            <div className="p-4 bg-green-500/10 text-green-500 border border-green-500/20 rounded-lg flex items-center gap-3">
-              <Trophy className="h-5 w-5" />
+            <div className="p-3 bg-green-500/10 text-green-500 border border-green-500/20 rounded-lg flex items-center gap-2">
+              <Trophy className="h-4 w-4" />
               <div>
-                <p className="font-medium">Completed / Uploaded Result</p>
-                <p className="text-sm opacity-80">This match's results are locked and pending super admin review or already processed.</p>
+                <p className="font-medium text-sm">Completed / Uploaded Result</p>
+                <p className="text-[11px] opacity-80">This match's results are locked and pending super admin review or already processed.</p>
+              </div>
+            </div>
+          ) : !isResultAllowed ? (
+            <div className="p-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg flex items-center gap-2">
+              <ShieldAlert className="h-4 w-4" />
+              <div>
+                <p className="font-medium text-sm">Action Locked</p>
+                <p className="text-[11px] opacity-80">Result upload unlocks 5 minutes after the match starts to prevent early manipulation.</p>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleResultSubmit} className="space-y-6">
+            <form onSubmit={handleResultSubmit} className="space-y-4">
               {winners.length > 0 && (
-                <div className="space-y-4 p-4 border rounded-lg bg-accent/20">
-                  <h3 className="font-medium text-sm text-muted-foreground">Enter Winners</h3>
-                  <div className="grid gap-4">
-                    {winners.map((winner) => (
-                      <div key={winner.rank} className="flex flex-col sm:flex-row sm:items-center gap-3">
-                        <div className="sm:w-24 shrink-0 font-medium text-sm">
-                          {winner.rank}{winner.rank === 1 ? 'st' : winner.rank === 2 ? 'nd' : winner.rank === 3 ? 'rd' : 'th'} Winner
-                        </div>
-                        <div className="flex-1">
+                <div className="space-y-3 p-3 border rounded-lg bg-accent/20">
+                  <h3 className="font-medium text-xs text-muted-foreground">ENTER WINNERS</h3>
+                  <div className="grid gap-3">
+                    {winners.map((winner, idx) => (
+                      <div key={idx} className="space-y-2">
+                        <Label>Rank {winner.rank} Winner (UID / IGN)</Label>
+                        <div className="relative">
                           <Input 
-                            placeholder="Enter Participant Game UID..."
                             value={winner.winnerUid}
-                            onChange={(e) => handleWinnerChange(winner.rank, e.target.value)}
+                            onChange={e => handleWinnerChange(winner.rank, e.target.value)}
+                            onFocus={() => setActiveDropdown(winner.rank)}
+                            onBlur={() => setTimeout(() => setActiveDropdown(null), 200)}
+                            placeholder="Type UID or IGN to search..."
+                            disabled={isCompleted || isLoadingParticipants}
+                            required
+                            autoComplete="off"
                           />
+                          {activeDropdown === winner.rank && (
+                            <div className="absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md p-1">
+                              {participants
+                                .filter((p: any) => {
+                                  // Don't show participants who are already selected for OTHER ranks
+                                  const isSelectedByOther = winners.some(w => w.rank !== winner.rank && w.winnerUid === p.gameUid);
+                                  if (isSelectedByOther) return false;
+                                  
+                                  // Search filter
+                                  return p.ign.toLowerCase().includes(winner.winnerUid.toLowerCase()) || p.gameUid.includes(winner.winnerUid);
+                                })
+                                .map((p: any) => (
+                                  <div 
+                                    key={p.id} 
+                                    className="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 px-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground border-b border-white/5 last:border-0"
+                                    onClick={() => {
+                                      handleWinnerChange(winner.rank, p.gameUid)
+                                      setActiveDropdown(null)
+                                    }}
+                                  >
+                                    <div className="flex flex-col">
+                                      <span className="font-bold text-orange-400">{p.ign}</span>
+                                      <span className="text-xs text-muted-foreground">{p.gameUid}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              {participants.filter((p: any) => {
+                                const isSelectedByOther = winners.some(w => w.rank !== winner.rank && w.winnerUid === p.gameUid);
+                                if (isSelectedByOther) return false;
+                                return p.ign.toLowerCase().includes(winner.winnerUid.toLowerCase()) || p.gameUid.includes(winner.winnerUid);
+                              }).length === 0 && (
+                                <div className="py-6 px-2 text-sm text-muted-foreground text-center">No participants found.</div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}

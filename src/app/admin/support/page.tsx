@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/context/AppContext'
 import { apiClient } from '@/lib/apiClient'
+import { useSocket } from '@/context/SocketContext'
 import { Headset, MessageSquare, Clock, Filter, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -14,6 +15,7 @@ export default function AdminSupportPage() {
   const [tickets, setTickets] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'mine' | 'unassigned'>('all')
+  const { socket } = useSocket()
 
   useEffect(() => {
     if (userRole !== 'admin') {
@@ -24,7 +26,7 @@ export default function AdminSupportPage() {
     const fetchTickets = async () => {
       try {
         setIsLoading(true)
-        const res = await apiClient.get(`/api/support/admin/tickets?filter=${filter}`)
+        const res = await apiClient.get(`/support/admin/tickets?filter=${filter}`)
         setTickets(res.data)
       } catch (error) {
         showToast('Failed to load support tickets', 'error')
@@ -35,6 +37,32 @@ export default function AdminSupportPage() {
 
     fetchTickets()
   }, [userRole, router, filter, showToast])
+
+  useEffect(() => {
+    if (!socket) return
+
+    const handleNewTicket = (newTicket: any) => {
+      setTickets(prev => {
+        // Prevent duplicates
+        if (prev.some(t => t.id === newTicket.id)) return prev;
+        return [newTicket, ...prev];
+      })
+    }
+
+    const handleTicketUpdate = (updatedTicket: any) => {
+      setTickets(prev => prev.map(t => t.id === updatedTicket.id ? updatedTicket : t))
+    }
+
+    socket.on('support:ticket:new', handleNewTicket)
+    socket.on('support:ticket:updated', handleTicketUpdate)
+    socket.on('support:ticket:assigned', handleTicketUpdate)
+
+    return () => {
+      socket.off('support:ticket:new', handleNewTicket)
+      socket.off('support:ticket:updated', handleTicketUpdate)
+      socket.off('support:ticket:assigned', handleTicketUpdate)
+    }
+  }, [socket])
 
   if (userRole !== 'admin') return null
 

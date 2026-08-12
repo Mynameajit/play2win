@@ -76,11 +76,16 @@ export default function NewSupportTicketPage() {
       let attachmentUrls: string[] = []
       
       if (imageFiles.length > 0) {
-        const uploadPromises = imageFiles.map(file => uploadToCloudinary(file, 'support_attachments'))
-        attachmentUrls = await Promise.all(uploadPromises)
+        try {
+          const uploadPromises = imageFiles.map(file => uploadToCloudinary(file, 'support_attachments'))
+          attachmentUrls = await Promise.all(uploadPromises)
+        } catch (uploadError) {
+          console.error('Image upload failed, proceeding without images:', uploadError)
+          showToast('Image upload failed, creating ticket without images...', 'info')
+        }
       }
 
-      const res = await apiClient.post('/api/support/tickets', {
+      const res = await apiClient.post('/support/tickets', {
         subject,
         category,
         message,

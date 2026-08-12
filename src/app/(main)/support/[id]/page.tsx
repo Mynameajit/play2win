@@ -37,7 +37,7 @@ export default function SupportChatPage() {
 
     const fetchTicket = async () => {
       try {
-        const res = await apiClient.get(`/api/support/tickets/${params.id}`)
+        const res = await apiClient.get(`/support/tickets/${params.id}`)
         setTicket(res.data)
         setMessages(res.data.messages || [])
       } catch (error) {
@@ -104,11 +104,16 @@ export default function SupportChatPage() {
     try {
       let attachmentUrls: string[] = []
       if (imageFile) {
-        const url = await uploadToCloudinary(imageFile, 'support_attachments')
-        attachmentUrls.push(url)
+        try {
+          const url = await uploadToCloudinary(imageFile, 'support_attachments')
+          attachmentUrls.push(url)
+        } catch (uploadError) {
+          console.error('Image upload failed, proceeding without images:', uploadError)
+          showToast('Image upload failed, sending message without image...', 'info')
+        }
       }
 
-      const res = await apiClient.post(`/api/support/tickets/${ticket.id}/messages`, {
+      const res = await apiClient.post(`/support/tickets/${ticket.id}/messages`, {
         message: newMessage,
         attachments: attachmentUrls
       })

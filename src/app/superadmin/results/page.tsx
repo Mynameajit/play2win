@@ -243,51 +243,51 @@ export default function PendingResultsPage() {
           <p className="text-muted-foreground font-medium text-lg">No pending results to review! 🎉</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {results.map((res) => (
-            <Card key={res.id} className="overflow-hidden flex flex-col md:flex-row">
-              <div className="w-full md:w-48 bg-slate-900 relative min-h-[120px]">
+            <Card key={res.id} className="overflow-hidden flex flex-col md:flex-row shadow-sm">
+              <div className="w-full md:w-36 bg-slate-900 relative min-h-[100px] shrink-0">
                 {res.tournament.banner ? (
                   <img src={res.tournament.banner} alt="Tournament" className="w-full h-full object-cover opacity-60" />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-slate-500">
-                    <Gamepad2 className="w-8 h-8 mb-2 opacity-50" />
-                    <span className="text-xs">{res.tournament.game}</span>
+                    <Gamepad2 className="w-6 h-6 mb-1 opacity-50" />
+                    <span className="text-[10px]">{res.tournament.game}</span>
                   </div>
                 )}
                 <div className="absolute top-2 left-2">
-                  <Badge variant="secondary" className="bg-orange-500 text-white border-0">Pending</Badge>
+                  <Badge variant="secondary" className="bg-orange-500 text-white border-0 text-[9px] px-1.5 py-0">Pending</Badge>
                 </div>
               </div>
               
-              <CardContent className="p-4 flex-1 flex flex-col justify-between">
+              <CardContent className="p-3 flex-1 flex flex-col justify-between min-w-0">
                 <div>
-                  <h3 className="font-bold text-lg leading-tight mb-1">{res.tournament.title}</h3>
-                  <div className="text-xs text-muted-foreground mb-4">
-                    Submitted by: <span className="font-semibold text-primary">{res.admin.username}</span> at {new Date(res.createdAt).toLocaleString()}
+                  <h3 className="font-bold text-base leading-tight mb-0.5 truncate">{res.tournament.title}</h3>
+                  <div className="text-[10px] text-muted-foreground mb-3">
+                    By: <span className="font-semibold text-primary">{res.admin.username}</span> at {new Date(res.createdAt).toLocaleString()}
                   </div>
 
-                  <div className="bg-muted/50 rounded-lg p-3 grid grid-cols-2 gap-y-3 mb-4 border">
+                  <div className="bg-muted/30 rounded-md p-2.5 grid grid-cols-2 gap-y-2.5 mb-3 border border-white/5">
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase font-semibold">Winner</p>
-                      <p className="font-bold text-green-500 text-sm leading-tight flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" /> {res.winner.fullName || res.winner.username}
+                      <p className="text-[9px] text-muted-foreground uppercase font-semibold">Winner</p>
+                      <p className="font-bold text-green-500 text-xs leading-tight flex items-center gap-1 mt-0.5">
+                        <CheckCircle className="w-3 h-3" /> <span className="truncate">{res.winner.fullName || res.winner.username}</span>
                       </p>
-                      <p className="text-[10px] text-muted-foreground font-mono mt-0.5">UID: {res.participant.gameUid}</p>
+                      <p className="text-[9px] text-muted-foreground font-mono mt-0.5 truncate">UID: {res.participant.gameUid}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase font-semibold">Rank / Kills</p>
-                      <p className="font-bold text-sm">#{res.rank} / {res.kills}</p>
+                      <p className="text-[9px] text-muted-foreground uppercase font-semibold">Rank / Kills</p>
+                      <p className="font-bold text-xs mt-0.5">#{res.rank} / {res.kills}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase font-semibold">Prize</p>
-                      <p className="font-bold text-yellow-500 text-sm">₹{res.prizeAmount}</p>
+                      <p className="text-[9px] text-muted-foreground uppercase font-semibold">Prize</p>
+                      <p className="font-bold text-yellow-500 text-xs mt-0.5">₹{res.prizeAmount}</p>
                     </div>
                     <div>
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="link" className="p-0 h-auto text-xs text-primary flex items-center gap-1">
-                            <Eye className="w-3 h-3" /> View Screenshot
+                          <Button variant="link" className="p-0 h-auto text-[10px] text-primary flex items-center gap-1 mt-0.5">
+                            <Eye className="w-3 h-3" /> Screenshot
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-2xl">
@@ -305,11 +305,11 @@ export default function PendingResultsPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 pt-2 border-t">
+                <div className="flex flex-wrap gap-1.5 pt-2 border-t border-white/5">
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="flex-1 text-xs">
-                        <Users className="w-3 h-3 mr-1" /> Participants
+                      <Button variant="outline" size="sm" className="flex-1 text-[10px] h-7 px-2">
+                        <Users className="w-3 h-3 mr-1" /> Players
                       </Button>
                     </DialogTrigger>
                     <ParticipantsModal participants={res.tournament.participants} winnerUid={res.participant.gameUid} />
@@ -317,19 +317,19 @@ export default function PendingResultsPage() {
                   
                   <Dialog open={editingResult?.id === res.id} onOpenChange={(open) => !open && setEditingResult(null)}>
                     <DialogTrigger asChild>
-                      <Button variant="secondary" size="sm" className="flex-1 text-xs" onClick={() => setEditingResult(res)}>
+                      <Button variant="secondary" size="sm" className="flex-1 text-[10px] h-7 px-2" onClick={() => setEditingResult(res)}>
                         <Edit className="w-3 h-3 mr-1" /> Edit
                       </Button>
                     </DialogTrigger>
                     {editingResult?.id === res.id && <EditResultModal result={res} onClose={() => setEditingResult(null)} />}
                   </Dialog>
                   
-                  <Button variant="destructive" size="sm" className="flex-1 text-xs" onClick={() => handleReject(res.id)} disabled={rejectMutation.isPending}>
+                  <Button variant="destructive" size="sm" className="flex-1 text-[10px] h-7 px-2" onClick={() => handleReject(res.id)} disabled={rejectMutation.isPending}>
                     <XCircle className="w-3 h-3 mr-1" /> Reject
                   </Button>
                   
-                  <Button variant="default" size="sm" className="flex-1 text-xs bg-green-600 hover:bg-green-700" onClick={() => handleApprove(res.id)} disabled={approveMutation.isPending}>
-                    <Trophy className="w-3 h-3 mr-1" /> Approve & Pay
+                  <Button variant="default" size="sm" className="flex-1 text-[10px] h-7 px-2 bg-green-600 hover:bg-green-700" onClick={() => handleApprove(res.id)} disabled={approveMutation.isPending}>
+                    <Trophy className="w-3 h-3 mr-1" /> Pay
                   </Button>
                 </div>
               </CardContent>

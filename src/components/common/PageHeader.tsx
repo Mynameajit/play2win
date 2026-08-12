@@ -94,7 +94,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, descrip
     // Default Fallback
     return {
       title: 'Esports Arena',
-      subtitle: 'Play2Earn Gaming',
+      subtitle: 'BattleX Gaming',
       icon: <Home className="w-4 h-4 text-cyan-400" />,
       fallbackBack: '/dashboard'
     }

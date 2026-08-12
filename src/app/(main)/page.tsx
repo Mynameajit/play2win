@@ -6,20 +6,18 @@ import { useApp } from '@/context/AppContext'
 import { LandingPage } from '@/components/landing/LandingPage'
 
 export default function Home() {
-  const router = useRouter()
   const { userRole } = useApp()
+  const router = useRouter()
 
   useEffect(() => {
     if (userRole === 'user') {
       router.push('/dashboard')
-    } else if (userRole === 'admin') {
-      router.push('/admin')
-    } else if (userRole === 'superadmin') {
-      router.push('/superadmin')
     }
   }, [userRole, router])
 
-  if (userRole !== 'guest') return null
+  if (userRole === 'user') {
+    return null // Return null while redirecting
+  }
 
   return <LandingPage />
 }

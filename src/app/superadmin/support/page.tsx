@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/context/AppContext'
 import { apiClient } from '@/lib/apiClient'
+import { useSocket } from '@/context/SocketContext'
 import { Headset, MessageSquare, Clock, Filter, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -14,6 +15,7 @@ export default function SuperAdminSupportPage() {
   const [tickets, setTickets] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'escalated' | 'internal'>('all')
+  const { socket } = useSocket()
 
   useEffect(() => {
     if (userRole !== 'superadmin') {
@@ -30,7 +32,7 @@ export default function SuperAdminSupportPage() {
         // Actually, Superadmin should see EVERYTHING. We'll use the existing one but we might need a dedicated SuperAdmin controller for this.
         // For now, let's use the admin endpoint with 'all' and a special 'internal' filter.
         
-        let url = `/api/support/admin/tickets?filter=all`
+        let url = `/support/admin/tickets?filter=all`
         if (filter === 'escalated') url += '&status=ESCALATED'
         
         const res = await apiClient.get(url)
@@ -44,6 +46,36 @@ export default function SuperAdminSupportPage() {
 
     fetchTickets()
   }, [userRole, router, filter, showToast])
+
+  useEffect(() => {
+    if (!socket) return
+
+    const handleNewTicket = (newTicket: any) => {
+      setTickets(prev => {
+        // Prevent duplicates
+        if (prev.some(t => t.id === newTicket.id)) return prev;
+        return [newTicket, ...prev];
+      })
+    }
+
+    const handleTicketUpdate = (updatedTicket: any) => {
+      setTickets(prev => prev.map(t => t.id === updatedTicket.id ? updatedTicket : t))
+    }
+
+    socket.on('support:ticket:new', handleNewTicket)
+    socket.on('support:ticket:updated', handleTicketUpdate)
+    socket.on('support:ticket:assigned', handleTicketUpdate)
+    socket.on('support:ticket:escalated', handleTicketUpdate)
+    socket.on('support:ticket:internal', handleNewTicket)
+
+    return () => {
+      socket.off('support:ticket:new', handleNewTicket)
+      socket.off('support:ticket:updated', handleTicketUpdate)
+      socket.off('support:ticket:assigned', handleTicketUpdate)
+      socket.off('support:ticket:escalated', handleTicketUpdate)
+      socket.off('support:ticket:internal', handleNewTicket)
+    }
+  }, [socket])
 
   if (userRole !== 'superadmin') return null
 
@@ -108,7 +140,7 @@ export default function SuperAdminSupportPage() {
           {tickets.map(ticket => (
             <div 
               key={ticket.id}
-              onClick={() => router.push(`/admin/support/${ticket.id}`)}
+              onClick={() => router.push(`/superadmin/support/${ticket.id}`)}
               className="glass-panel p-5 rounded-2xl border border-white/10 hover:border-amber-500/30 transition-all cursor-pointer relative overflow-hidden group"
             >
               <div className={`absolute left-0 top-0 bottom-0 w-1 ${getStatusColor(ticket.status)}`} />

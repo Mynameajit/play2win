@@ -5,6 +5,8 @@ import { useApp } from '@/context/AppContext'
 import { Modal } from '@/components/ui/Modal'
 import { PageHeader } from '@/components/common/PageHeader'
 import { apiClient } from '@/lib/apiClient'
+import { useUserProfile, useWalletDeposit, useWalletWithdraw } from '@/hooks/useProfileQuery'
+import { useWalletTransactions } from '@/hooks/useWallet'
 import { 
   Wallet, 
   ArrowDownRight, 
@@ -20,21 +22,25 @@ import {
   Search,
   Filter
 } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 
 export const WalletView: React.FC = () => {
   const { 
-    user, 
-    setUser,
-    transactions, 
     isDepositModalOpen, 
     setIsDepositModalOpen, 
     isWithdrawModalOpen, 
     setIsWithdrawModalOpen,
-    handleDeposit,
-    handleWithdraw,
     showToast,
     socket
   } = useApp()
+
+  const { data: user, isLoading: isUserLoading } = useUserProfile()
+  const { data: txData, isLoading: isTxLoading } = useWalletTransactions()
+  const transactions = txData?.transactions || []
+  
+  const depositMutation = useWalletDeposit()
+  const withdrawMutation = useWalletWithdraw()
+  const queryClient = useQueryClient()
 
   const [depositStep, setDepositStep] = useState<1 | 2>(1)
   const [depositAmount, setDepositAmount] = useState<number>(500)
@@ -51,21 +57,6 @@ export const WalletView: React.FC = () => {
   // Filter transaction histories
   const [searchQuery, setSearchQuery] = useState('')
   const [walletTab, setWalletTab] = useState<'ALL' | 'DEPOSIT' | 'WITHDRAWAL' | 'ENTRY_FEE' | 'WINNING' | 'COUPON_BONUS'>('ALL')
-
-  const fetchProfileBalances = async () => {
-    try {
-      const res = await apiClient.get('/users/profile')
-      if (res.data) {
-        setUser((prev: any) => ({
-          ...prev,
-          depositBalance: Number(res.data.depositBalance),
-          winningBalance: Number(res.data.winningBalance),
-          bonusBalance: Number(res.data.bonusBalance),
-          lockedBalance: Number(res.data.lockedBalance)
-        }))
-      }
-    } catch (err) {}
-  }
 
   // Payment settings state
   const [paymentSettings, setPaymentSettings] = useState({
@@ -91,7 +82,6 @@ export const WalletView: React.FC = () => {
   }
 
   useEffect(() => {
-    fetchProfileBalances()
     fetchPaymentSettings()
     
     // Listen for real-time updates
@@ -140,26 +130,34 @@ export const WalletView: React.FC = () => {
     setDepositStep(2)
   }
 
-  const handleFinalDeposit = (e: React.FormEvent) => {
+  const handleFinalDeposit = async (e: React.FormEvent) => {
     e.preventDefault()
     const refStr = utrRef.trim()
     if (!refStr) {
       showToast('A valid 12-Digit UTR reference number is required.', 'error')
       return
     }
-    handleDeposit(depositAmount, depositMethod, refStr)
-    setIsDepositModalOpen(false)
-    setDepositStep(1)
-    setUtrRef('')
+    try {
+      await depositMutation.mutateAsync({ amount: depositAmount, method: depositMethod, utr: refStr })
+      showToast('Deposit request submitted. Pending verification.', 'success')
+      setIsDepositModalOpen(false)
+      setDepositStep(1)
+      setUtrRef('')
+    } catch (err: any) {
+      showToast(err.response?.data?.message || 'Failed to submit deposit', 'error')
+    }
   }
 
   const onWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (withdrawAmount <= 0 || !upiId.trim()) return
-    const success = await handleWithdraw(withdrawAmount, upiId)
-    if (success) {
+    try {
+      await withdrawMutation.mutateAsync({ amount: withdrawAmount, upiId })
+      showToast('Withdrawal request submitted successfully.', 'success')
       setIsWithdrawModalOpen(false)
       setUpiId('')
+    } catch (err: any) {
+      showToast(err.response?.data?.message || 'Failed to request withdrawal', 'error')
     }
   }
 
@@ -173,7 +171,8 @@ export const WalletView: React.FC = () => {
       if (response.data) {
         showToast(response.data.message || 'Promo code applied!', 'success')
         setCouponCode('')
-        fetchProfileBalances()
+        queryClient.invalidateQueries({ queryKey: ['profile'] })
+        queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] })
       }
     } catch (err: any) {
       showToast(err.response?.data?.message || 'Invalid or expired coupon.', 'error')
@@ -183,19 +182,19 @@ export const WalletView: React.FC = () => {
   }
 
   const copyUpiVpa = () => {
-    const upi = paymentSettings.upiId || 'play2earn.esports@upi'
+    const upi = paymentSettings.upiId || 'battlex.esports@upi'
     navigator.clipboard.writeText(upi)
     showToast('UPI VPA copied to clipboard!', 'info')
   }
 
   // Calculate total balance: deposit + winning + bonus - locked
-  const depositBal = user.depositBalance || 0
-  const winningBal = user.winningBalance || 0
-  const bonusBal = user.bonusBalance || 0
-  const lockedBal = user.lockedBalance || 0
+  const depositBal = user?.depositBalance || 0
+  const winningBal = user?.winningBalance || 0
+  const bonusBal = user?.bonusBalance || 0
+  const lockedBal = user?.lockedBalance || 0
   const totalBalance = depositBal + winningBal + bonusBal - lockedBal
 
-  const filteredTxns = transactions.filter(t => {
+  const filteredTxns = transactions.filter((t: any) => {
     const matchesTab = walletTab === 'ALL' ? true : t.type.toUpperCase() === walletTab
     const matchesSearch = t.details?.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           t.paymentMethod?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -333,8 +332,14 @@ export const WalletView: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 font-medium">
-                {filteredTxns.length > 0 ? (
-                  filteredTxns.map(t => (
+                {isTxLoading ? (
+                  <tr>
+                    <td colSpan={3} className="p-8 text-center text-purple-500 animate-pulse font-bold">
+                      Loading Ledger...
+                    </td>
+                  </tr>
+                ) : filteredTxns.length > 0 ? (
+                  filteredTxns.map((t: any) => (
                     <tr key={t.id} className="hover:bg-white/5">
                       <td className="p-3 text-slate-100 font-bold">
                         <p>{t.details || t.type}</p>
@@ -485,10 +490,11 @@ export const WalletView: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="w-2/3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs shadow-xl flex items-center justify-center gap-1"
+                disabled={depositMutation.isPending}
+                className="w-2/3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs shadow-xl flex items-center justify-center gap-1 disabled:opacity-50"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>CONFIRM DEPOSIT OF ₹{depositAmount}</span>
+                <span>{depositMutation.isPending ? 'SUBMITTING...' : `CONFIRM DEPOSIT OF ₹${depositAmount}`}</span>
               </button>
             </div>
           </form>
@@ -533,10 +539,10 @@ export const WalletView: React.FC = () => {
           </div>
 
           <button
-            type="submit" disabled={winningBal < 100}
+            type="submit" disabled={winningBal < 100 || withdrawMutation.isPending}
             className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            CONFIRM WITHDRAWAL OF ₹{withdrawAmount}
+            {withdrawMutation.isPending ? 'PROCESSING...' : `CONFIRM WITHDRAWAL OF ₹${withdrawAmount}`}
           </button>
         </form>
       </Modal>

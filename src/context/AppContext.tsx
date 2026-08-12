@@ -546,11 +546,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       })
 
       if (response.data && response.data.success) {
-        // Refetch tournaments to update slots count
+        // Refetch legacy context tournaments
         const tourneyRes = await apiClient.get('/tournaments')
         if (tourneyRes.data?.tournaments) {
           setTournaments(tourneyRes.data.tournaments)
         }
+        
+        // Invalidate React Query hooks so dashboards update in real time
+        queryClient.invalidateQueries({ queryKey: ['tournaments'] })
+        queryClient.invalidateQueries({ queryKey: ['tournament'] })
+        queryClient.invalidateQueries({ queryKey: ['myMatches'] })
+        queryClient.invalidateQueries({ queryKey: ['profile'] })
 
         // Refetch transactions ledger
         const txnRes = await apiClient.get('/transactions')

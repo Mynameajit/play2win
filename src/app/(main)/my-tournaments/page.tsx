@@ -28,7 +28,7 @@ export default function MyTournamentsPage() {
   )
 
   return (
-    <div className="space-y-6 sm:space-y-8 pb-20 md:pb-8 max-w-4xl mx-auto text-white px-4">
+    <div className="space-y-6 sm:space-y-8 pb-20 md:pb-8 max-w-4xl mx-auto text-white px-2">
       <PageHeader />
 
       {/* Tabs Switcher */}

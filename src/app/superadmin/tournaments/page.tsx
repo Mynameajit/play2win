@@ -67,6 +67,7 @@ export default function TournamentsPage() {
     entryFee: 0,
     totalSlots: 100,
     assignedAdminId: '',
+    prizeDistribution: [{ rank: 1, prize: 0 }],
   })
 
   // Filter admins based on the selected game
@@ -95,7 +96,7 @@ export default function TournamentsPage() {
         prizePool: Number(formData.prizePool),
         entryFee: Number(formData.entryFee),
         totalSlots: Number(formData.totalSlots),
-        prizeDistribution: {} 
+        prizeDistribution: formData.prizeDistribution 
       } as any)
       setIsCreateOpen(false)
       setSelectedFile(null)
@@ -126,7 +127,7 @@ export default function TournamentsPage() {
         prizePool: Number(formData.prizePool),
         entryFee: Number(formData.entryFee),
         totalSlots: Number(formData.totalSlots),
-        prizeDistribution: {} 
+        prizeDistribution: formData.prizeDistribution 
       } as any)
       setIsEditOpen(false)
       setSelectedFile(null)
@@ -269,7 +270,7 @@ export default function TournamentsPage() {
           setFormData({
             title: '', game: '', mode: 'Squad', map: 'Erangel',
             startTime: new Date().toISOString().slice(0, 16),
-            prizePool: 0, entryFee: 0, totalSlots: 100, assignedAdminId: '', banner: ''
+            prizePool: 0, entryFee: 0, totalSlots: 100, assignedAdminId: '', banner: '', prizeDistribution: [{ rank: 1, prize: 0 }]
           })
           setSelectedFile(null)
           setIsCreateOpen(true)
@@ -365,6 +366,67 @@ export default function TournamentsPage() {
               </div>
             </div>
             
+            
+            <div className="space-y-4 pt-2 border-t border-white/10">
+              <div className="flex justify-between items-center">
+                <Label>Prize Distribution</Label>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setFormData({ 
+                    ...formData, 
+                    prizeDistribution: [...(formData.prizeDistribution || []), { rank: (formData.prizeDistribution?.length || 0) + 1, prize: 0 }] 
+                  })}
+                >
+                  <Plus className="w-3 h-3 mr-1" /> Add Rank
+                </Button>
+              </div>
+              <div className="grid gap-2 max-h-[150px] overflow-y-auto pr-2">
+                {formData.prizeDistribution?.map((p: any, index: number) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Input 
+                        type="number" 
+                        min="1" 
+                        placeholder="Rank"
+                        value={p.rank}
+                        onChange={e => {
+                          const newDist = [...formData.prizeDistribution!]
+                          newDist[index].rank = Number(e.target.value)
+                          setFormData({ ...formData, prizeDistribution: newDist })
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        placeholder="Prize (₹)"
+                        value={p.prize}
+                        onChange={e => {
+                          const newDist = [...formData.prizeDistribution!]
+                          newDist[index].prize = Number(e.target.value)
+                          setFormData({ ...formData, prizeDistribution: newDist })
+                        }}
+                      />
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      size="icon" 
+                      onClick={() => {
+                        const newDist = formData.prizeDistribution!.filter((_, i) => i !== index)
+                        setFormData({ ...formData, prizeDistribution: newDist })
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="space-y-2 pt-2 border-t border-white/10">
               <Label>Assign Room Admin (Filtered by Game)</Label>
               <Select 
@@ -477,6 +539,67 @@ export default function TournamentsPage() {
               <div className="space-y-2">
                 <Label>Prize Pool (₹)</Label>
                 <Input required type="number" min="0" value={formData.prizePool} onChange={(e) => setFormData({ ...formData, prizePool: Number(e.target.value) })} />
+              </div>
+            </div>
+
+            
+            <div className="space-y-4 pt-2 border-t border-white/10">
+              <div className="flex justify-between items-center">
+                <Label>Prize Distribution</Label>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setFormData({ 
+                    ...formData, 
+                    prizeDistribution: [...(formData.prizeDistribution || []), { rank: (formData.prizeDistribution?.length || 0) + 1, prize: 0 }] 
+                  })}
+                >
+                  <Plus className="w-3 h-3 mr-1" /> Add Rank
+                </Button>
+              </div>
+              <div className="grid gap-2 max-h-[150px] overflow-y-auto pr-2">
+                {formData.prizeDistribution?.map((p: any, index: number) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Input 
+                        type="number" 
+                        min="1" 
+                        placeholder="Rank"
+                        value={p.rank}
+                        onChange={e => {
+                          const newDist = [...formData.prizeDistribution!]
+                          newDist[index].rank = Number(e.target.value)
+                          setFormData({ ...formData, prizeDistribution: newDist })
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        placeholder="Prize (₹)"
+                        value={p.prize}
+                        onChange={e => {
+                          const newDist = [...formData.prizeDistribution!]
+                          newDist[index].prize = Number(e.target.value)
+                          setFormData({ ...formData, prizeDistribution: newDist })
+                        }}
+                      />
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      size="icon" 
+                      onClick={() => {
+                        const newDist = formData.prizeDistribution!.filter((_, i) => i !== index)
+                        setFormData({ ...formData, prizeDistribution: newDist })
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
               </div>
             </div>
 

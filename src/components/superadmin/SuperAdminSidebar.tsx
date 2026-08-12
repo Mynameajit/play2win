@@ -16,7 +16,8 @@ import {
   FileText,
   Settings,
   UserCircle,
-  Database
+  Database,
+  HelpCircle
 } from 'lucide-react'
 
 import {
@@ -66,8 +67,9 @@ const data = {
       ],
     },
     {
-      title: 'System',
+      title: 'System & Support',
       items: [
+        { title: 'Support Tickets', url: '/superadmin/support', icon: HelpCircle },
         { title: 'Reports', url: '/superadmin/reports', icon: FileText },
         { title: 'Settings', url: '/superadmin/settings', icon: Settings },
         { title: 'Payment Settings', url: '/superadmin/payment-settings', icon: Wallet },

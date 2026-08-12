@@ -99,3 +99,32 @@ export function useDeleteTournament() {
     }
   })
 }
+
+export function useJoinTournament() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ tournamentId, data }: { tournamentId: string; data: any }) => {
+      const response = await apiClient.post(`/tournaments/${tournamentId}/join`, data)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tournaments'] })
+      queryClient.invalidateQueries({ queryKey: ['tournament'] })
+      queryClient.invalidateQueries({ queryKey: ['profile'] })
+      queryClient.invalidateQueries({ queryKey: ['myMatches'] })
+      queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] })
+    }
+  })
+}
+
+// Helper hook to fetch the current user's matches from their profile
+export function useMyMatches() {
+  return useQuery({
+    queryKey: ['myMatches'],
+    queryFn: async () => {
+      const response = await apiClient.get('/users/profile')
+      // Extract participants and map to tournament details if populated by backend
+      return response.data?.participants || []
+    }
+  })
+}

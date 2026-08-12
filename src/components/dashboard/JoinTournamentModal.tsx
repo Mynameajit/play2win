@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { useApp } from '@/context/AppContext'
 import { Modal } from '@/components/ui/Modal'
 import { Trophy, Gamepad2, Search, CheckCircle2, AlertCircle, Phone, User as UserIcon } from 'lucide-react'
+import confetti from 'canvas-confetti'
 
 export const JoinTournamentModal: React.FC = () => {
   const { 
@@ -62,12 +63,16 @@ export const JoinTournamentModal: React.FC = () => {
       return
     }
 
-    // Verification check removed
-
     setIsLoading(true)
     const success = await handleJoinTournament(selectedTournament.id, gameUid, user.name, user.name, phone)
     setIsLoading(false)
     if (success) {
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#a855f7', '#06b6d4', '#eab308']
+      })
       setIsJoinModalOpen(false)
     }
   }

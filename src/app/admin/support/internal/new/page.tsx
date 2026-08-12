@@ -38,7 +38,7 @@ export default function NewInternalTicketPage() {
 
     setIsSubmitting(true)
     try {
-      const res = await apiClient.post('/api/support/admin/internal', {
+      const res = await apiClient.post('/support/admin/internal', {
         subject,
         message,
         category: 'INTERNAL'

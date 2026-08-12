@@ -6,8 +6,8 @@ import { Toaster } from '@/components/ui/toaster'
 import { QueryProvider } from '@/providers/QueryProvider'
 
 export const metadata: Metadata = {
-  title: 'Play2Earn - BGMI & Free Fire Esports Tournament Platform',
-  description: 'Compete in daily BGMI & Free Fire esports tournaments. Instant UPI cash rewards, anti-cheat protection, and live room credentials.',
+  title: 'BattleX - Premium Esports Tournament Platform',
+  description: 'Compete in BGMI, PUBG & Free Fire esports tournaments. Instant cash rewards, anti-cheat protection, and live match updates.',
 }
 
 import { GlobalRealtimeProvider } from '@/components/providers/GlobalRealtimeProvider'
@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-background text-foreground antialiased min-h-screen relative selection:bg-purple-600 selection:text-white">
+      <body className="bg-background text-foreground antialiased min-h-screen relative selection:bg-purple-600 selection:text-white overflow-x-hidden">
         <QueryProvider>
           <AppProvider>
             <SocketProvider>

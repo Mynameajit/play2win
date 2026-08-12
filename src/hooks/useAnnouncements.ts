@@ -24,7 +24,7 @@ export function useActiveAnnouncement() {
   const query = useQuery({
     queryKey: ['activeAnnouncement'],
     queryFn: async () => {
-      const res = await apiClient.get('/api/notifications/announcements/active')
+      const res = await apiClient.get('/notifications/announcements/active')
       return (res.data as Announcement) || null
     },
     staleTime: 5 * 60 * 1000, // 5 minutes cache
@@ -56,14 +56,14 @@ export function useAdminAnnouncements() {
   const query = useQuery({
     queryKey: ['adminAnnouncements'],
     queryFn: async () => {
-      const res = await apiClient.get('/api/notifications/announcements')
+      const res = await apiClient.get('/notifications/announcements')
       return res.data as Announcement[]
     }
   })
 
   const create = useMutation({
     mutationFn: async (data: Partial<Announcement>) => {
-      const res = await apiClient.post('/api/notifications/announcements', data)
+      const res = await apiClient.post('/notifications/announcements', data)
       return res.data
     },
     onSuccess: () => {
@@ -73,7 +73,7 @@ export function useAdminAnnouncements() {
 
   const update = useMutation({
     mutationFn: async ({ id, data }: { id: string, data: Partial<Announcement> }) => {
-      const res = await apiClient.put(`/api/notifications/announcements/${id}`, data)
+      const res = await apiClient.put(`/notifications/announcements/${id}`, data)
       return res.data
     },
     onSuccess: () => {
@@ -83,7 +83,7 @@ export function useAdminAnnouncements() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      await apiClient.delete(`/api/notifications/announcements/${id}`)
+      await apiClient.delete(`/notifications/announcements/${id}`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminAnnouncements'] })

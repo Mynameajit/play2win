@@ -28,7 +28,7 @@ export default function SuperAdminSupportChatPage() {
 
   const fetchTicket = async () => {
     try {
-      const res = await apiClient.get(`/api/support/tickets/${params.id}`)
+      const res = await apiClient.get(`/support/tickets/${params.id}`)
       setTicket(res.data)
       setMessages(res.data.messages || [])
     } catch (error) {
@@ -80,7 +80,7 @@ export default function SuperAdminSupportChatPage() {
         attachmentUrls.push(url)
       }
 
-      await apiClient.post(`/api/support/tickets/${ticket.id}/messages`, {
+      await apiClient.post(`/support/tickets/${ticket.id}/messages`, {
         message: newMessage,
         attachments: attachmentUrls
       })

@@ -12,10 +12,18 @@ export default function AdminDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {Array(4).fill(0).map((_, i) => (
-          <SkeletonLoader key={i} className="h-32" />
-        ))}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">
+            Welcome to the Admin Control Panel. Here's an overview of your assigned matches.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array(4).fill(0).map((_, i) => (
+            <SkeletonLoader key={i} className="h-32" />
+          ))}
+        </div>
       </div>
     )
   }

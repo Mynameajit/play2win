@@ -11,10 +11,6 @@ export const MobileNav: React.FC = () => {
   const router = useRouter()
   const { userRole, handleLogout } = useApp()
 
-  if (userRole === 'guest') {
-    return null
-  }
-
   if (userRole === 'admin') {
     return null
   }
@@ -59,9 +55,13 @@ export const MobileNav: React.FC = () => {
   }
 
   // Gamer Nav Items
-  const items = [
+  const items = (userRole as string) === 'guest' ? [
     { href: '/', label: 'Home', icon: <Home className="w-4 h-4" /> },
-    { href: '/dashboard', label: 'Matches', icon: <Trophy className="w-4 h-4" /> },
+    { href: '/tournaments', label: 'Matches', icon: <Trophy className="w-4 h-4" /> },
+    { href: '/login', label: 'Sign In', icon: <User className="w-4 h-4" /> },
+  ] : [
+    { href: '/dashboard', label: 'Home', icon: <Home className="w-4 h-4" /> },
+    { href: '/tournaments', label: 'Matches', icon: <Trophy className="w-4 h-4" /> },
     { href: '/wallet', label: 'Wallet', icon: <Wallet className="w-4 h-4" /> },
     { href: '/support', label: 'Support', icon: <ShieldCheck className="w-4 h-4" /> },
     { href: '/profile', label: 'Profile', icon: <User className="w-4 h-4" /> },

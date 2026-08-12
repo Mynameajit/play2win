@@ -17,8 +17,8 @@ export default function MainLayout({
       {/* Fixed Header Navigation Bar */}
       <Navbar />
 
-      {/* Main Content Area (pt-14 for fixed header) */}
-      <main className="relative z-10 max-w-7xl mx-auto px-2 sm:px-4 pt-14 pb-16 sm:pb-6">
+      {/* Main Content Area */}
+      <main className="relative z-10 max-w-7xl mx-auto px-0 sm:px-2 pt-2">
         {children}
       </main>
 
