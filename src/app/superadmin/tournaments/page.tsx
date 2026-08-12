@@ -233,9 +233,21 @@ export default function TournamentsPage() {
                 <Eye className="mr-2 h-4 w-4" /> View Details
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {
+                let pd = match.prizeDistribution;
+                if (typeof pd === 'string') {
+                  try { pd = JSON.parse(pd) } catch(e) { pd = [] }
+                }
+                if (!Array.isArray(pd)) pd = [];
+                
+                let st = new Date().toISOString().slice(0, 16);
+                try {
+                  if (match.startTime) st = new Date(match.startTime).toISOString().slice(0, 16)
+                } catch(e) {}
+
                 setFormData({ 
                   ...match, 
-                  startTime: new Date(match.startTime).toISOString().slice(0, 16) 
+                  startTime: st,
+                  prizeDistribution: pd
                 })
                 setIsEditOpen(true)
               }}>

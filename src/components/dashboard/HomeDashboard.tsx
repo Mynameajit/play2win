@@ -8,10 +8,12 @@ import { useUserProfile } from '@/hooks/useProfileQuery'
 import { useTournaments } from '@/hooks/useTournaments'
 import { TournamentCard } from './TournamentCard'
 import { apiClient } from '@/lib/apiClient'
+import { useAnnouncements } from '@/hooks/useNotifications'
 
 export const HomeDashboard: React.FC = () => {
   const { data: user, isLoading: isUserLoading } = useUserProfile()
   const { data: liveData } = useTournaments({ limit: 10 }) 
+  const { data: announcements } = useAnnouncements()
   
   const [activeTab, setActiveTab] = useState<'ALL' | 'BGMI' | 'FREE FIRE'>('ALL')
   const [topPlayers, setTopPlayers] = useState<any[]>([])
@@ -112,12 +114,15 @@ export const HomeDashboard: React.FC = () => {
         </div>
 
         {/* Notice Bar */}
-        <div className="bg-slate-900/60 rounded-xl border border-white/5 p-2.5 flex items-center justify-between shadow-lg">
+        <div className={`bg-slate-900/60 rounded-xl border border-white/5 p-2.5 flex items-center justify-between shadow-lg ${announcements?.[0]?.priority === 'HIGH' ? 'animate-pulse ring-1 ring-red-500/50' : ''}`}>
           <div className="flex items-center gap-2">
-            <div className="p-1 rounded-md bg-purple-500/20 text-purple-400">
+            <div className={`p-1 rounded-md ${announcements?.[0]?.priority === 'HIGH' ? 'bg-red-500/20 text-red-400' : 'bg-purple-500/20 text-purple-400'}`}>
               <Gamepad2 className="w-3.5 h-3.5" />
             </div>
-            <p className="text-[9px] text-slate-300 font-medium"><span className="text-purple-400 font-bold mr-1">Notice:</span>Room ID & Password will be dispatched by Room Owner.</p>
+            <p className="text-[9px] sm:text-xs text-slate-300 font-medium">
+              <span className={`${announcements?.[0]?.priority === 'HIGH' ? 'text-red-400' : 'text-purple-400'} font-bold mr-1`}>Notice:</span>
+              {announcements && announcements.length > 0 ? announcements[0].message : 'Welcome to Play2Earn! Tournaments are live.'}
+            </p>
           </div>
           <div className="text-slate-500 text-xs">&gt;</div>
         </div>

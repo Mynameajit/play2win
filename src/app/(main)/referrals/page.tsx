@@ -36,6 +36,12 @@ export default function ReferralsPage() {
     showToast(`${label} copied to clipboard!`, 'success')
   }
 
+  const shareOnWhatsApp = () => {
+    const text = `🎮 Join BattleX and play Esports tournaments!\n\nUse my invite code: *${stats.referralCode}*\n\nOr sign up here: ${stats.referralLink}`
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`
+    window.open(url, '_blank')
+  }
+
   if (loading || !stats) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-white">
@@ -56,10 +62,19 @@ export default function ReferralsPage() {
         </div>
         
         <div className="space-y-2 text-center sm:text-left flex-1">
-          <h3 className="text-lg sm:text-xl font-black text-white">Refer Friends & Earn Cash Rewards!</h3>
-          <p className="text-xs text-slate-300 leading-normal">
-            Invite your gamer friends to join BattleX. You get <strong className="text-emerald-400">₹25 cash</strong> credited to your wallet for each friend who registers and joins their first match lobby!
+          <h3 className="text-xl sm:text-2xl font-black text-white drop-shadow-md">Refer Friends & Earn Cash Rewards!</h3>
+          <p className="text-sm text-slate-300 leading-relaxed font-medium">
+            Invite your gamer friends to join BattleX. You get <strong className="text-emerald-400 font-extrabold text-base">₹25 cash</strong> credited to your wallet for each friend who registers and joins their first match lobby!
           </p>
+          <div className="pt-2">
+            <button
+              onClick={shareOnWhatsApp}
+              className="px-4 py-2 rounded-xl bg-green-500 hover:bg-green-400 text-slate-900 font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.4)] w-full sm:w-auto transition-all transform hover:scale-105"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>SHARE VIA WHATSAPP</span>
+            </button>
+          </div>
         </div>
       </div>
 

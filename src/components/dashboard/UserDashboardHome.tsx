@@ -7,12 +7,12 @@ import { TournamentCard } from './TournamentCard'
 import { Filter, ShieldCheck, ArrowLeft, Trophy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-type TabType = 'MY MATCH' | 'LIVE' | 'COMPLETED' | 'CANCELED'
+type TabType = 'MY MATCH' | 'UPCOMING' | 'LIVE' | 'COMPLETED' | 'CANCELED'
 
 export const UserDashboardHome: React.FC = () => {
   const router = useRouter()
   const { setSelectedTournament, setIsJoinModalOpen } = useApp()
-  const [activeTab, setActiveTab] = useState<TabType>('LIVE')
+  const [activeTab, setActiveTab] = useState<TabType>('UPCOMING')
   
   // Use TanStack queries
   const { data: tournamentsData, isLoading: isTournamentsLoading } = useTournaments()
@@ -23,8 +23,10 @@ export const UserDashboardHome: React.FC = () => {
   // Derived filter logic
   const filteredTournaments = (() => {
     switch (activeTab) {
+      case 'UPCOMING':
+        return allTournaments.filter(t => t.status === 'UPCOMING')
       case 'LIVE':
-        return allTournaments.filter(t => t.status === 'LIVE' || t.status === 'UPCOMING' || t.status === 'ROOM_OPEN')
+        return allTournaments.filter(t => t.status === 'LIVE' || t.status === 'ROOM_OPEN')
       case 'MY MATCH':
         // Filter by tournaments I've joined
         const joinedIds = myMatches.map((m: any) => m.tournamentId)
@@ -38,7 +40,7 @@ export const UserDashboardHome: React.FC = () => {
     }
   })()
 
-  const tabs: TabType[] = ['MY MATCH', 'LIVE', 'COMPLETED', 'CANCELED']
+  const tabs: TabType[] = ['MY MATCH', 'UPCOMING', 'LIVE', 'COMPLETED', 'CANCELED']
 
   return (
     <div className="text-white max-w-lg mx-auto pb-14 sm:pb-6">

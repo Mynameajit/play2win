@@ -63,22 +63,7 @@ export const Navbar: React.FC = () => {
               </Link>
               {userRole === 'user' && (
                 <>
-                  <Link
-                    href="/my-tournaments"
-                    className={`px-3 py-1 rounded-xl text-xs font-semibold ${
-                      pathname === '/my-tournaments' ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
-                    }`}
-                  >
-                    My Tournaments
-                  </Link>
-                  <Link
-                    href="/leaderboard"
-                    className={`px-3 py-1 rounded-xl text-xs font-semibold ${
-                      pathname === '/leaderboard' ? 'bg-purple-600 text-white' : 'text-slate-300 hover:text-white'
-                    }`}
-                  >
-                    Leaderboard
-                  </Link>
+
                   <Link
                     href="/referrals"
                     className={`px-3 py-1 rounded-xl text-xs font-semibold ${

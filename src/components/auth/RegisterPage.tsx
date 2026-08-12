@@ -122,7 +122,7 @@ export const RegisterPage: React.FC = () => {
         <div className="bg-[#0b0a15] rounded-3xl p-6 border border-purple-500/20 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
 
         <h2 className="text-3xl font-black text-center text-white italic tracking-tight mb-2 uppercase drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">CREATE ACCOUNT</h2>
-        {/* Register Form */}
+        {/* Register Form */}   
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5 py-6">
           
           {/* Username */}

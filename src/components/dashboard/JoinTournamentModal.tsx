@@ -19,8 +19,8 @@ export const JoinTournamentModal: React.FC = () => {
   } = useApp()
 
   const isBgmi = selectedTournament?.game === 'BGMI'
-  const defaultUid = isBgmi ? user.bgmiUid : user.freefireUid
-  const defaultIgn = isBgmi ? user.bgmiIgn : user.freefireIgn
+  const defaultUid = isBgmi ? (user.bgmiUid || (user as any).pubgUid) : user.freefireUid
+  const defaultIgn = isBgmi ? (user.bgmiIgn || (user as any).pubgIgn) : user.freefireIgn
 
   // Determine if fields are missing
   const isFullNameMissing = !user.name || user.name.trim() === ''

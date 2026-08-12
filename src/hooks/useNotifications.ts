@@ -25,7 +25,7 @@ export function useNotifications() {
     queryKey: ['notifications'],
     queryFn: async () => {
       const res = await apiClient.get('/api/notifications')
-      return res.data as Notification[]
+      return (res.data.notifications || res.data) as Notification[]
     }
   })
 
@@ -113,10 +113,37 @@ export function useNotifications() {
   })
 
   return {
-    ...query,
+    data: query.data,
+    isLoading: query.isLoading,
     markAsRead,
     markAllAsRead,
     deleteNotification,
     deleteAll
   }
+}
+
+export interface Announcement {
+  id: string
+  title: string
+  message: string
+  type: string
+  priority: string
+  targetRole?: string | null
+  targetTournamentId?: string | null
+  isPinned: boolean
+  expiresAt?: string | null
+  createdAt: string
+}
+
+export function useAnnouncements() {
+  const query = useQuery({
+    queryKey: ['announcements', 'active'],
+    queryFn: async () => {
+      const res = await apiClient.get('/api/notifications/announcements/active')
+      return res.data as Announcement[]
+    },
+    refetchInterval: 30000 // Refetch every 30 seconds to get fresh announcements
+  })
+
+  return query
 }
